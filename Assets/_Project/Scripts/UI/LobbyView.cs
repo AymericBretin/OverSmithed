@@ -14,6 +14,8 @@ namespace OverSmithed.UI
     {
         private Button _leaveButton;
         private Button _launchButton;
+        private Button _copyCodeButton;
+        private Label _modeLabel;
         private VisualElement _playerList;
         private Label _messageLabel;
         private SessionRoster _roster;
@@ -26,21 +28,24 @@ namespace OverSmithed.UI
             _messageLabel = root.Q<Label>("message-label");
 
             _launchButton = root.Q<Button>("launch-button");
+            _copyCodeButton = root.Q<Button>("copy-code-button");
+            _modeLabel = root.Q<Label>("mode-label");
 
             // Mouse only: Enter / gamepad A are join buttons and must not trigger a focused button.
             _leaveButton.focusable = false;
             _launchButton.focusable = false;
+            _copyCodeButton.focusable = false;
             _leaveButton.clicked += OnLeaveClicked;
             _launchButton.clicked += OnLaunchClicked;
+            _copyCodeButton.clicked += OnCopyCodeClicked;
 
             var isHost = NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost;
             _leaveButton.text = isHost ? "Fermer la partie" : "Quitter";
             _launchButton.style.display = isHost ? DisplayStyle.Flex : DisplayStyle.None;
             root.Q<Label>("waiting-label").style.display = isHost ? DisplayStyle.None : DisplayStyle.Flex;
-            root.Q<Label>("mode-label").text = SessionService.Instance.Mode == SessionMode.Local
-                ? "Partie locale"
-                : "Partie en ligne";
             _messageLabel.text = string.Empty;
+            SessionService.Instance.SessionChanged += RefreshSessionInfo;
+            RefreshSessionInfo();
 
             var localPlayers = LocalPlayersManager.Instance;
             localPlayers.SlotsChanged += Refresh;
@@ -55,6 +60,11 @@ namespace OverSmithed.UI
         {
             _leaveButton.clicked -= OnLeaveClicked;
             _launchButton.clicked -= OnLaunchClicked;
+            _copyCodeButton.clicked -= OnCopyCodeClicked;
+            if (SessionService.Instance != null)
+            {
+                SessionService.Instance.SessionChanged -= RefreshSessionInfo;
+            }
 
             var localPlayers = LocalPlayersManager.Instance;
             if (localPlayers != null)
@@ -122,6 +132,26 @@ namespace OverSmithed.UI
         private void ShowMessage(string message)
         {
             _messageLabel.text = message;
+        }
+
+        private void RefreshSessionInfo()
+        {
+            var code = SessionService.Instance.SessionCode;
+            if (SessionService.Instance.Mode == SessionMode.Local)
+            {
+                _modeLabel.text = "Partie locale";
+            }
+            else
+            {
+                _modeLabel.text = code != null ? $"Partie en ligne — code : {code}" : "Partie en ligne";
+            }
+            _copyCodeButton.style.display = code != null ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private void OnCopyCodeClicked()
+        {
+            GUIUtility.systemCopyBuffer = SessionService.Instance.SessionCode;
+            ShowMessage("Code copié.");
         }
 
         private void OnLaunchClicked()

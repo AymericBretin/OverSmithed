@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using OverSmithed.Networking;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -23,11 +24,8 @@ namespace OverSmithed.UI
             _statusLabel = root.Q<Label>("status-label");
 
             _localButton.clicked += OnLocalClicked;
-
-            // Online play comes with the Relay step.
-            _hostButton.SetEnabled(false);
-            _joinButton.SetEnabled(false);
-            _codeField.SetEnabled(false);
+            _hostButton.clicked += OnHostClicked;
+            _joinButton.clicked += OnJoinClicked;
 
             _statusLabel.text = string.Empty;
             _localButton.Focus();
@@ -36,11 +34,13 @@ namespace OverSmithed.UI
         private void OnDisable()
         {
             _localButton.clicked -= OnLocalClicked;
+            _hostButton.clicked -= OnHostClicked;
+            _joinButton.clicked -= OnJoinClicked;
         }
 
         private void OnLocalClicked()
         {
-            _localButton.SetEnabled(false);
+            SetInteractable(false);
             if (SessionService.Instance.StartLocal())
             {
                 _statusLabel.text = "Démarrage…";
@@ -48,8 +48,41 @@ namespace OverSmithed.UI
             else
             {
                 _statusLabel.text = "Impossible de démarrer la partie locale.";
-                _localButton.SetEnabled(true);
+                SetInteractable(true);
             }
+        }
+
+        private void OnHostClicked()
+        {
+            _ = RunOnlineAsync("Création de la partie en ligne…", SessionService.Instance.HostOnlineAsync());
+        }
+
+        private void OnJoinClicked()
+        {
+            _ = RunOnlineAsync("Connexion à la partie…", SessionService.Instance.JoinByCodeAsync(_codeField.value));
+        }
+
+        private async Task RunOnlineAsync(string pendingMessage, Task<string> operation)
+        {
+            SetInteractable(false);
+            _statusLabel.text = pendingMessage;
+
+            var error = await operation;
+
+            // On success the network moves us to the lobby and this view is destroyed.
+            if (error != null && this != null)
+            {
+                _statusLabel.text = error;
+                SetInteractable(true);
+            }
+        }
+
+        private void SetInteractable(bool interactable)
+        {
+            _localButton.SetEnabled(interactable);
+            _hostButton.SetEnabled(interactable);
+            _joinButton.SetEnabled(interactable);
+            _codeField.SetEnabled(interactable);
         }
     }
 }
