@@ -2,12 +2,14 @@ using System.Collections.Generic;
 using OverSmithed.Networking;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace OverSmithed.Players
 {
     /// <summary>
     /// Server only. Keeps one <see cref="NetworkPlayer"/> per roster entry in the current scene,
     /// owned by the machine of that player. Avatars belong to the scene and are destroyed with it.
+    /// Spawning starts once every client has finished loading the scene.
     /// </summary>
     public class PlayerSpawner : MonoBehaviour
     {
@@ -17,7 +19,8 @@ namespace OverSmithed.Players
         private readonly Dictionary<(ulong clientId, byte localIndex), NetworkPlayer> _players = new();
         private SessionRoster _roster;
 
-        private void Start()
+        // Awake (not Start): the load event can complete in the same frame as the scene load on a lone host.
+        private void Awake()
         {
             var networkManager = NetworkManager.Singleton;
             if (networkManager == null || !networkManager.IsServer)
@@ -25,18 +28,37 @@ namespace OverSmithed.Players
                 enabled = false;
                 return;
             }
-
-            _roster = SessionRoster.Instance;
-            _roster.Changed += Synchronize;
-            Synchronize();
+            networkManager.SceneManager.OnLoadEventCompleted += HandleLoadEventCompleted;
         }
 
         private void OnDestroy()
         {
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager != null && networkManager.SceneManager != null)
+            {
+                networkManager.SceneManager.OnLoadEventCompleted -= HandleLoadEventCompleted;
+            }
             if (_roster != null)
             {
                 _roster.Changed -= Synchronize;
             }
+        }
+
+        private void HandleLoadEventCompleted(string sceneName, LoadSceneMode mode,
+            List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+        {
+            if (sceneName != gameObject.scene.name || _roster != null)
+            {
+                return;
+            }
+            foreach (var clientId in clientsTimedOut)
+            {
+                Debug.LogWarning($"[PlayerSpawner] Client {clientId} did not load {sceneName} in time.");
+            }
+
+            _roster = SessionRoster.Instance;
+            _roster.Changed += Synchronize;
+            Synchronize();
         }
 
         private void Synchronize()

@@ -1,3 +1,4 @@
+using OverSmithed.Core;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
@@ -78,6 +79,24 @@ namespace OverSmithed.Networking
             }
 
             Mode = SessionMode.Local;
+            return true;
+        }
+
+        /// <summary>Host only: closes the lobby and takes every machine to the game scene.</summary>
+        public bool LaunchGame()
+        {
+            var roster = SessionRoster.Instance;
+            if (!NetworkManager.Singleton.IsServer || roster == null || roster.Count == 0 || roster.IsLocked)
+            {
+                return false;
+            }
+
+            roster.SetLocked(true);
+            if (!SceneFlow.LoadNetworkScene(SceneNames.Game))
+            {
+                roster.SetLocked(false);
+                return false;
+            }
             return true;
         }
 

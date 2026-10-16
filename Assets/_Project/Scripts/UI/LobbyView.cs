@@ -13,6 +13,7 @@ namespace OverSmithed.UI
     public class LobbyView : MonoBehaviour
     {
         private Button _leaveButton;
+        private Button _launchButton;
         private VisualElement _playerList;
         private Label _messageLabel;
         private SessionRoster _roster;
@@ -24,12 +25,18 @@ namespace OverSmithed.UI
             _playerList = root.Q("player-list");
             _messageLabel = root.Q<Label>("message-label");
 
+            _launchButton = root.Q<Button>("launch-button");
+
             // Mouse only: Enter / gamepad A are join buttons and must not trigger a focused button.
             _leaveButton.focusable = false;
+            _launchButton.focusable = false;
             _leaveButton.clicked += OnLeaveClicked;
+            _launchButton.clicked += OnLaunchClicked;
 
             var isHost = NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost;
             _leaveButton.text = isHost ? "Fermer la partie" : "Quitter";
+            _launchButton.style.display = isHost ? DisplayStyle.Flex : DisplayStyle.None;
+            root.Q<Label>("waiting-label").style.display = isHost ? DisplayStyle.None : DisplayStyle.Flex;
             root.Q<Label>("mode-label").text = SessionService.Instance.Mode == SessionMode.Local
                 ? "Partie locale"
                 : "Partie en ligne";
@@ -47,6 +54,7 @@ namespace OverSmithed.UI
         private void OnDisable()
         {
             _leaveButton.clicked -= OnLeaveClicked;
+            _launchButton.clicked -= OnLaunchClicked;
 
             var localPlayers = LocalPlayersManager.Instance;
             if (localPlayers != null)
@@ -93,6 +101,8 @@ namespace OverSmithed.UI
                 }
                 _playerList.Add(row);
             }
+
+            _launchButton.SetEnabled(_roster != null && _roster.Count > 0 && !_roster.IsLocked);
         }
 
         private bool TryFindByNumber(byte number, out RosterEntry entry)
@@ -112,6 +122,14 @@ namespace OverSmithed.UI
         private void ShowMessage(string message)
         {
             _messageLabel.text = message;
+        }
+
+        private void OnLaunchClicked()
+        {
+            if (!SessionService.Instance.LaunchGame())
+            {
+                ShowMessage("Impossible de lancer la partie.");
+            }
         }
 
         private void OnLeaveClicked()

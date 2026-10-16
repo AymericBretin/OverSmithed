@@ -41,13 +41,16 @@ namespace OverSmithed.Core
             }
         }
 
-        private static void LoadNetworkScene(string sceneName)
+        /// <summary>Server only: loads a scene on every connected machine.</summary>
+        public static bool LoadNetworkScene(string sceneName)
         {
             var status = NetworkManager.Singleton.SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
             if (status != SceneEventProgressStatus.Started)
             {
                 Debug.LogError($"[SceneFlow] Could not load {sceneName}: {status}");
+                return false;
             }
+            return true;
         }
     }
 }

@@ -6,6 +6,8 @@
             <ui:VisualElement name="player-list" class="player-list" />
             <ui:Label text="Manette : A pour rejoindre, B pour quitter&#10;Clavier ZQSD : Espace pour rejoindre, X pour quitter&#10;Clavier flèches : Entrée pour rejoindre, Retour arrière pour quitter" class="hint" />
             <ui:Label name="message-label" class="status" />
+            <ui:Button name="launch-button" text="Lancer la partie" class="menu-button" />
+            <ui:Label name="waiting-label" text="En attente du lancement par l'hôte…" class="hint" />
             <ui:Button name="leave-button" text="Quitter" class="menu-button" />
         </ui:VisualElement>
     </ui:VisualElement>

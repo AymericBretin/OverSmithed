@@ -97,3 +97,25 @@
     color: rgb(200, 220, 255);
     background-color: rgba(120, 160, 240, 0.18);
 }
+
+.hud {
+    flex-grow: 1;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px;
+}
+
+.hud-info {
+    font-size: 24px;
+    color: rgb(230, 230, 230);
+    padding: 8px 16px;
+    border-radius: 6px;
+    background-color: rgba(20, 20, 24, 0.7);
+}
+
+.hud-button {
+    font-size: 22px;
+    height: 48px;
+    padding: 0 24px;
+}

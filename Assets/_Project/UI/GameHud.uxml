@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="hud">
+        <ui:Label name="info-label" class="hud-info" />
+        <ui:Button name="leave-button" text="Quitter" class="hud-button" />
+    </ui:VisualElement>
+</ui:UXML>
