@@ -63,3 +63,37 @@
     margin: 12px 0;
     white-space: normal;
 }
+
+.lobby-screen {
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 48px;
+}
+
+.lobby-panel {
+    width: 760px;
+}
+
+.player-list {
+    margin: 8px 0 16px 0;
+}
+
+.player-row {
+    font-size: 24px;
+    padding: 10px 16px;
+    margin: 4px 0;
+    border-radius: 6px;
+    color: rgb(140, 140, 140);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.player-row--local {
+    color: rgb(255, 230, 160);
+    background-color: rgba(240, 200, 120, 0.18);
+}
+
+.player-row--remote {
+    color: rgb(200, 220, 255);
+    background-color: rgba(120, 160, 240, 0.18);
+}

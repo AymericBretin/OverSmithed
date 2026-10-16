@@ -19,6 +19,8 @@ namespace OverSmithed.Networking
     {
         public static SessionService Instance { get; private set; }
 
+        [SerializeField] private SessionRoster _rosterPrefab;
+
         public SessionMode Mode { get; private set; }
 
         // Domain reload is disabled on entering Play Mode: statics must be reset by hand.
@@ -40,6 +42,7 @@ namespace OverSmithed.Networking
 
         private void Start()
         {
+            NetworkManager.Singleton.OnServerStarted += HandleServerStarted;
             NetworkManager.Singleton.OnClientStopped += HandleClientStopped;
         }
 
@@ -47,6 +50,7 @@ namespace OverSmithed.Networking
         {
             if (NetworkManager.Singleton != null)
             {
+                NetworkManager.Singleton.OnServerStarted -= HandleServerStarted;
                 NetworkManager.Singleton.OnClientStopped -= HandleClientStopped;
             }
             if (Instance == this)
@@ -84,6 +88,14 @@ namespace OverSmithed.Networking
             {
                 networkManager.Shutdown();
             }
+        }
+
+        // The roster lives for the whole session, across networked scene loads.
+        private void HandleServerStarted()
+        {
+            var roster = Instantiate(_rosterPrefab);
+            DontDestroyOnLoad(roster.gameObject);
+            roster.NetworkObject.Spawn();
         }
 
         // Raised on every machine (the host is also a client) once the network has fully stopped.

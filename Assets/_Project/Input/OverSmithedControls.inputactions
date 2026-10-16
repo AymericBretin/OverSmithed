@@ -8,7 +8,7 @@
             "actions": [
                 {
                     "name": "Join",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "776cce02-54a7-4304-adc0-f278bf4293e2",
                     "expectedControlType": "Button",
                     "processors": "",

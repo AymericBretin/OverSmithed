@@ -237,6 +237,8 @@ GameObject:
   - component: {fileID: 1949673694}
   - component: {fileID: 1949673693}
   - component: {fileID: 1949673692}
+  - component: {fileID: 1949673697}
+  - component: {fileID: 1949673696}
   m_Layer: 0
   m_Name: App
   m_TagString: Untagged
@@ -268,6 +270,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0dc6c54d7afb47daa41e953faa786b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Networking.SessionService
+  _rosterPrefab: {fileID: 3474112866727455295, guid: 81915bb17d6244b668d49dbf5214889d, type: 3}
 --- !u!114 &1949673694
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -295,6 +298,65 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1949673696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1949673691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1796ea30c8011489faf13ab4ecb51355, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.LocalPlayersManager
+  _slotPrefab: {fileID: 1305008280586483621, guid: 397f732d856a0485d9e0fcb0e7ed4dab, type: 3}
+  _actions: {fileID: 0}
+--- !u!114 &1949673697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1949673691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 621567455fd1c4ceb811cc8a00b6a1a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInputManager
+  m_NotificationBehavior: 3
+  m_MaxPlayerCount: 4
+  m_AllowJoining: 1
+  m_JoinBehavior: 2
+  m_PlayerJoinedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_PlayerLeftEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_JoinAction:
+    m_UseReference: 0
+    m_Action:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: ead73ecb-1be3-44bb-bd4c-79845bad5215
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+      m_Priority: 0
+    m_Reference: {fileID: 0}
+  m_PlayerPrefab: {fileID: 3439132570267242002, guid: 397f732d856a0485d9e0fcb0e7ed4dab, type: 3}
+  m_SplitScreen: 0
+  m_MaintainAspectRatioInSplitScreen: 0
+  m_FixedNumberOfSplitScreens: -1
+  m_SplitScreenRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -1,8 +1,11 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:VisualElement class="screen">
-        <ui:VisualElement class="panel">
+    <ui:VisualElement class="lobby-screen">
+        <ui:VisualElement class="panel lobby-panel">
             <ui:Label text="Lobby" class="title" />
             <ui:Label name="mode-label" class="subtitle" />
+            <ui:VisualElement name="player-list" class="player-list" />
+            <ui:Label text="Manette : A pour rejoindre, B pour quitter&#10;Clavier ZQSD : Espace pour rejoindre, X pour quitter&#10;Clavier flèches : Entrée pour rejoindre, Retour arrière pour quitter" class="hint" />
+            <ui:Label name="message-label" class="status" />
             <ui:Button name="leave-button" text="Quitter" class="menu-button" />
         </ui:VisualElement>
     </ui:VisualElement>
