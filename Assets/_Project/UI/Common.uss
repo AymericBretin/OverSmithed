@@ -1,0 +1,65 @@
+.screen {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.panel {
+    width: 640px;
+    padding: 32px;
+    border-radius: 12px;
+    background-color: rgba(20, 20, 24, 0.85);
+}
+
+.title {
+    font-size: 64px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: rgb(240, 200, 120);
+    margin-bottom: 24px;
+}
+
+.subtitle {
+    font-size: 28px;
+    -unity-text-align: middle-center;
+    color: rgb(220, 220, 220);
+    margin-bottom: 16px;
+}
+
+.menu-button {
+    height: 64px;
+    font-size: 28px;
+    margin: 8px 0;
+}
+
+.code-row {
+    flex-direction: row;
+    margin: 8px 0;
+}
+
+.code-row > TextField {
+    flex-grow: 1;
+    font-size: 28px;
+    margin: 0 8px 0 0;
+}
+
+.code-row > .menu-button {
+    width: 200px;
+    margin: 0;
+}
+
+.status {
+    font-size: 22px;
+    -unity-text-align: middle-center;
+    color: rgb(255, 160, 140);
+    margin-top: 16px;
+    white-space: normal;
+}
+
+.hint {
+    font-size: 22px;
+    -unity-text-align: middle-center;
+    color: rgb(180, 180, 180);
+    margin: 12px 0;
+    white-space: normal;
+}

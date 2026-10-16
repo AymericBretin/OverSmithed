@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="screen">
+        <ui:VisualElement class="panel">
+            <ui:Label text="OverSmithed" class="title" />
+            <ui:Button name="local-button" text="Jouer en local" class="menu-button" />
+            <ui:Button name="host-button" text="Héberger en ligne" class="menu-button" />
+            <ui:VisualElement class="code-row">
+                <ui:TextField name="code-field" max-length="16" placeholder-text="Code de la partie" />
+                <ui:Button name="join-button" text="Rejoindre" class="menu-button" />
+            </ui:VisualElement>
+            <ui:Label name="status-label" class="status" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="screen">
+        <ui:VisualElement class="panel">
+            <ui:Label text="Lobby" class="title" />
+            <ui:Label name="mode-label" class="subtitle" />
+            <ui:Button name="leave-button" text="Quitter" class="menu-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
