@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using OverSmithed.Networking;
+using OverSmithed.Players;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -64,13 +65,16 @@ namespace OverSmithed.UI
             }
         }
 
+        // Online, each machine usually has one player: the device that clicked joins the lobby automatically.
         private void OnHostClicked()
         {
+            LocalPlayersManager.Instance.QueueAutoJoinFromLastInput();
             _ = RunOnlineAsync("Création de la partie en ligne…", SessionService.Instance.HostOnlineAsync());
         }
 
         private void OnJoinClicked()
         {
+            LocalPlayersManager.Instance.QueueAutoJoinFromLastInput();
             _ = RunOnlineAsync("Connexion à la partie…", SessionService.Instance.JoinByCodeAsync(_codeField.value));
         }
 
@@ -80,9 +84,14 @@ namespace OverSmithed.UI
             _statusLabel.text = pendingMessage;
 
             var error = await operation;
+            if (error == null)
+            {
+                // The network moves us to the lobby and this view is destroyed.
+                return;
+            }
 
-            // On success the network moves us to the lobby and this view is destroyed.
-            if (error != null && this != null)
+            LocalPlayersManager.Instance?.CancelAutoJoin();
+            if (this != null)
             {
                 _statusLabel.text = error;
                 SetInteractable(true);

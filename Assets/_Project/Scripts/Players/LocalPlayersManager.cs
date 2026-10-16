@@ -4,6 +4,7 @@ using OverSmithed.Networking;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Utilities;
 
 namespace OverSmithed.Players
 {
@@ -23,6 +24,11 @@ namespace OverSmithed.Players
         private InputActionAsset _joinActions;
         private InputAction _joinAction;
         private SessionRoster _roster;
+
+        private IDisposable _anyButtonListener;
+        private InputControl _lastPressedControl;
+        private InputDevice _autoJoinDevice;
+        private string _autoJoinScheme;
 
         /// <summary>Raised when a local player is added, accepted or removed.</summary>
         public event Action SlotsChanged;
@@ -52,6 +58,9 @@ namespace OverSmithed.Players
             _joinActions = Instantiate(_slotPrefab.GetComponent<PlayerInput>().actions);
             _joinAction = _joinActions.FindAction("Join/Join", throwIfNotFound: true);
             _joinAction.performed += HandleJoinPerformed;
+
+            // Remembers which device was used last (mouse click, key or gamepad button), for auto-join.
+            _anyButtonListener = InputSystem.onAnyButtonPress.Call(control => _lastPressedControl = control);
         }
 
         private void Start()
@@ -78,6 +87,53 @@ namespace OverSmithed.Players
 
             _joinAction.performed -= HandleJoinPerformed;
             Destroy(_joinActions);
+            _anyButtonListener?.Dispose();
+        }
+
+        // Auto-join waits until the session is up: roster spawned and this machine connected.
+        private void Update()
+        {
+            if (_autoJoinDevice == null || _roster == null || !_roster.IsSpawned
+                || !NetworkManager.Singleton.IsConnectedClient)
+            {
+                return;
+            }
+
+            var device = _autoJoinDevice;
+            var scheme = _autoJoinScheme;
+            CancelAutoJoin();
+            if (device.added)
+            {
+                TryJoin(device, scheme);
+            }
+        }
+
+        /// <summary>
+        /// Online: the device used to click "Host" or "Join" becomes a player as soon as the session is ready.
+        /// A mouse click means the keyboard (ZQSD scheme); Enter means the arrows scheme.
+        /// </summary>
+        public void QueueAutoJoinFromLastInput()
+        {
+            CancelAutoJoin();
+            var control = _lastPressedControl;
+            if (control?.device is Gamepad gamepad)
+            {
+                _autoJoinDevice = gamepad;
+                _autoJoinScheme = "Gamepad";
+            }
+            else if (Keyboard.current != null)
+            {
+                var keyboard = Keyboard.current;
+                var arrowsPlayer = control == keyboard.enterKey || control == keyboard.numpadEnterKey;
+                _autoJoinDevice = keyboard;
+                _autoJoinScheme = arrowsPlayer ? "KeyboardRight" : "KeyboardLeft";
+            }
+        }
+
+        public void CancelAutoJoin()
+        {
+            _autoJoinDevice = null;
+            _autoJoinScheme = null;
         }
 
         /// <summary>Called by the lobby: devices can only join while it is open.</summary>
@@ -109,17 +165,18 @@ namespace OverSmithed.Players
         // pressing at the same time all join (a Button action would only keep one). Releases are ignored.
         private void HandleJoinPerformed(InputAction.CallbackContext context)
         {
-            if (!context.ReadValueAsButton())
+            if (context.ReadValueAsButton())
             {
-                return;
+                TryJoin(context.control.device, ControlSchemeOf(context));
             }
+        }
+
+        private void TryJoin(InputDevice device, string scheme)
+        {
             if (_roster == null || _roster.IsLocked || _slots.Count >= NetworkConstants.MaxPlayers)
             {
                 return;
             }
-
-            var device = context.control.device;
-            var scheme = ControlSchemeOf(context);
             if (scheme == null || IsInUse(device, scheme))
             {
                 return;
@@ -234,6 +291,7 @@ namespace OverSmithed.Players
 
         private void HandleNetworkStopped(bool wasHost)
         {
+            CancelAutoJoin();
             for (var i = _slots.Count - 1; i >= 0; i--)
             {
                 RemoveSlot(_slots[i]);
