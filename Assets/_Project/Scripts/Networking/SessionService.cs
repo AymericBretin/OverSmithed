@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using OverSmithed.Core;
 using Unity.Netcode;
@@ -23,11 +24,18 @@ namespace OverSmithed.Networking
     /// </summary>
     public class SessionService : MonoBehaviour
     {
+        private const string HostClosedMessage = "L'hôte a fermé la partie.";
+        private const string ConnectionLostMessage = "La connexion avec l'hôte a été perdue.";
+        private const string NetworkStoppedMessage = "Le réseau a été interrompu.";
+
         public static SessionService Instance { get; private set; }
 
         [SerializeField] private SessionRoster _rosterPrefab;
 
         private ISession _session;
+        private bool _leavingOnPurpose;
+        private string _disconnectReason;
+        private string _disconnectMessage;
 
         public SessionMode Mode { get; private set; }
 
@@ -36,6 +44,9 @@ namespace OverSmithed.Networking
 
         /// <summary>Raised when the online session is created, joined or left.</summary>
         public event Action SessionChanged;
+
+        /// <summary>Raised when the network stopped without the player asking for it, with a message to show.</summary>
+        public event Action<string> Disconnected;
 
         // Domain reload is disabled on entering Play Mode: statics must be reset by hand.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -56,21 +67,37 @@ namespace OverSmithed.Networking
 
         private void Start()
         {
-            NetworkManager.Singleton.OnServerStarted += HandleServerStarted;
-            NetworkManager.Singleton.OnClientStopped += HandleClientStopped;
+            var networkManager = NetworkManager.Singleton;
+            ConnectionApproval.Install(networkManager);
+            networkManager.OnServerStarted += HandleServerStarted;
+            networkManager.OnClientDisconnectCallback += HandleClientDisconnected;
+            networkManager.OnClientStopped += HandleClientStopped;
         }
 
         private void OnDestroy()
         {
-            if (NetworkManager.Singleton != null)
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager != null)
             {
-                NetworkManager.Singleton.OnServerStarted -= HandleServerStarted;
-                NetworkManager.Singleton.OnClientStopped -= HandleClientStopped;
+                networkManager.OnServerStarted -= HandleServerStarted;
+                networkManager.OnClientDisconnectCallback -= HandleClientDisconnected;
+                networkManager.OnClientStopped -= HandleClientStopped;
             }
             if (Instance == this)
             {
                 Instance = null;
             }
+        }
+
+        /// <summary>
+        /// Returns (and forgets) the message explaining the last unexpected disconnection, if any.
+        /// The menu calls it when it opens.
+        /// </summary>
+        public string ConsumeDisconnectMessage()
+        {
+            var message = _disconnectMessage;
+            _disconnectMessage = null;
+            return message;
         }
 
         /// <summary>Starts a host on the loopback interface only: no Relay, no Internet, nobody can join.</summary>
@@ -81,6 +108,7 @@ namespace OverSmithed.Networking
                 return false;
             }
 
+            PrepareStart();
             var networkManager = NetworkManager.Singleton;
             var transport = networkManager.GetComponent<UnityTransport>();
             transport.SetConnectionData("127.0.0.1", NetworkConstants.LocalPort, "127.0.0.1");
@@ -103,6 +131,7 @@ namespace OverSmithed.Networking
                 return "Une partie est déjà en cours.";
             }
 
+            PrepareStart();
             // Set before the network starts so the lobby, loaded during creation, shows the right mode.
             Mode = SessionMode.Online;
             try
@@ -115,9 +144,9 @@ namespace OverSmithed.Networking
                     IsPrivate = true
                 }.WithRelayNetwork();
 
-                _session = await MultiplayerService.Instance.CreateSessionAsync(options);
+                SetSession(await MultiplayerService.Instance.CreateSessionAsync(options));
+                EnsureNetworkRunning();
                 Debug.Log($"[Session] Online session created, code {_session.Code}.");
-                SessionChanged?.Invoke();
                 return null;
             }
             catch (Exception exception)
@@ -141,29 +170,31 @@ namespace OverSmithed.Networking
                 return "Entre le code de la partie.";
             }
 
+            PrepareStart();
             Mode = SessionMode.Online;
             try
             {
                 await ServicesInitializer.EnsureSignedInAsync();
-                _session = await MultiplayerService.Instance.JoinSessionByCodeAsync(code);
+                SetSession(await MultiplayerService.Instance.JoinSessionByCodeAsync(code));
+                EnsureNetworkRunning();
                 Debug.Log($"[Session] Joined online session {_session.Code}.");
-                SessionChanged?.Invoke();
                 return null;
-            }
-            catch (SessionException exception)
-            {
-                Debug.LogWarning($"[Session] Join failed: {exception.Error} {exception.Message}");
-                await AbortOnlineAsync();
-                // Full and locked sessions both surface as Unknown: the service does not keep the reason.
-                return exception.Error == SessionError.SessionNotFound
-                    ? "Aucune partie avec ce code."
-                    : "Impossible de rejoindre : partie pleine, déjà lancée ou code invalide.";
             }
             catch (Exception exception)
             {
-                Debug.LogException(exception);
+                Debug.LogWarning($"[Session] Join failed: {exception.Message}");
                 await AbortOnlineAsync();
-                return "Impossible de rejoindre la partie. Vérifie ta connexion.";
+
+                // Refused by the host's connection approval: its reason is more useful than ours.
+                var hostReason = ConsumeDisconnectMessage();
+                if (hostReason != null)
+                {
+                    return hostReason;
+                }
+                // Full and locked sessions both surface as Unknown: the service does not keep the reason.
+                return exception is SessionException { Error: SessionError.SessionNotFound }
+                    ? "Aucune partie avec ce code."
+                    : "Impossible de rejoindre : partie pleine, déjà lancée ou code invalide.";
             }
         }
 
@@ -191,21 +222,62 @@ namespace OverSmithed.Networking
             return true;
         }
 
+        /// <summary>The player asked to leave (or the host to close the game).</summary>
         public void Leave()
         {
+            _leavingOnPurpose = true;
             _ = LeaveAsync();
+        }
+
+        private void PrepareStart()
+        {
+            _leavingOnPurpose = false;
+            _disconnectReason = null;
+            _disconnectMessage = null;
+        }
+
+        private void SetSession(ISession session)
+        {
+            _session = session;
+            SessionChanged?.Invoke();
+        }
+
+        // The session's network handler swallows a Netcode start that gets cancelled (e.g. the host refused
+        // the connection): the session call then "succeeds" without a running network.
+        private static void EnsureNetworkRunning()
+        {
+            if (!NetworkManager.Singleton.IsListening)
+            {
+                throw new InvalidOperationException("The session started but Netcode is not running.");
+            }
         }
 
         private async Task LeaveAsync()
         {
-            var session = _session;
-            _session = null;
+            var networkManager = NetworkManager.Singleton;
 
+            // Host: tell every client why it is being disconnected before the network goes away.
+            if (networkManager != null && networkManager.IsServer && networkManager.IsListening)
+            {
+                var clients = networkManager.ConnectedClientsIds.Where(id => id != NetworkManager.ServerClientId).ToList();
+                foreach (var clientId in clients)
+                {
+                    networkManager.DisconnectClient(clientId, HostClosedMessage);
+                }
+                if (clients.Count > 0)
+                {
+                    // Let the transport flush the disconnect messages.
+                    await Task.Delay(200);
+                }
+            }
+
+            var session = _session;
             if (session != null)
             {
+                _session = null;
                 try
                 {
-                    // Host: deleting the session stops the network and disconnects everyone.
+                    // Host: deleting the session stops the network and removes it from the service.
                     if (session.IsHost)
                     {
                         await session.AsHost().DeleteAsync();
@@ -223,7 +295,6 @@ namespace OverSmithed.Networking
             }
 
             // Local play, or the session could not stop the network itself.
-            var networkManager = NetworkManager.Singleton;
             if (networkManager != null && networkManager.IsListening && !networkManager.ShutdownInProgress)
             {
                 networkManager.Shutdown();
@@ -232,6 +303,7 @@ namespace OverSmithed.Networking
 
         private async Task AbortOnlineAsync()
         {
+            _leavingOnPurpose = true;
             await LeaveAsync();
             Mode = SessionMode.None;
         }
@@ -257,16 +329,36 @@ namespace OverSmithed.Networking
             roster.NetworkObject.Spawn();
         }
 
+        // On a client, raised with its own id when the host disconnects it: the reason is readable here.
+        private void HandleClientDisconnected(ulong clientId)
+        {
+            var networkManager = NetworkManager.Singleton;
+            if (!networkManager.IsServer && clientId == networkManager.LocalClientId
+                && !string.IsNullOrEmpty(networkManager.DisconnectReason))
+            {
+                _disconnectReason = networkManager.DisconnectReason;
+            }
+        }
+
         // Raised on every machine (the host is also a client) once the network has fully stopped.
         private void HandleClientStopped(bool wasHost)
         {
             Mode = SessionMode.None;
 
-            // Network lost without us leaving (host gone, connection refused...): leave the online session too.
-            if (_session != null)
+            if (!_leavingOnPurpose)
             {
-                Leave();
+                _disconnectMessage = _disconnectReason ?? (wasHost ? NetworkStoppedMessage : ConnectionLostMessage);
+                Debug.LogWarning($"[Session] Disconnected: {_disconnectMessage}");
+                Disconnected?.Invoke(_disconnectMessage);
+
+                // Network lost without us leaving (host gone, connection refused...): leave the online session too.
+                if (_session != null)
+                {
+                    _ = LeaveAsync();
+                }
             }
+            _leavingOnPurpose = false;
+            _disconnectReason = null;
         }
     }
 }

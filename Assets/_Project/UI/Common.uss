@@ -127,3 +127,13 @@
     padding: 0 20px;
     margin-bottom: 8px;
 }
+
+.hud-column {
+    align-items: flex-start;
+}
+
+.hud-message {
+    font-size: 22px;
+    color: rgb(255, 190, 150);
+    margin-top: 8px;
+}

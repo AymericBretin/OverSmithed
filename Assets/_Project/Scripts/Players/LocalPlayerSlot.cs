@@ -21,6 +21,11 @@ namespace OverSmithed.Players
         public event Action<LocalPlayerSlot> LeaveRequested;
         public event Action<LocalPlayerSlot> DeviceLost;
 
+        /// <summary>The lost device came back: the Input System pairs it again automatically.</summary>
+        public event Action<LocalPlayerSlot> DeviceRegained;
+
+        public bool IsDeviceConnected { get; private set; } = true;
+
         public PlayerInput Input { get; private set; }
         public byte LocalIndex => (byte)Input.playerIndex;
         public string ControlScheme => Input.currentControlScheme;
@@ -40,6 +45,7 @@ namespace OverSmithed.Players
         {
             Input.onActionTriggered += HandleActionTriggered;
             Input.onDeviceLost += HandleDeviceLost;
+            Input.onDeviceRegained += HandleDeviceRegained;
         }
 
         private void OnDestroy()
@@ -48,6 +54,7 @@ namespace OverSmithed.Players
             {
                 Input.onActionTriggered -= HandleActionTriggered;
                 Input.onDeviceLost -= HandleDeviceLost;
+                Input.onDeviceRegained -= HandleDeviceRegained;
             }
         }
 
@@ -74,7 +81,14 @@ namespace OverSmithed.Players
 
         private void HandleDeviceLost(PlayerInput _)
         {
+            IsDeviceConnected = false;
             DeviceLost?.Invoke(this);
+        }
+
+        private void HandleDeviceRegained(PlayerInput _)
+        {
+            IsDeviceConnected = true;
+            DeviceRegained?.Invoke(this);
         }
     }
 }

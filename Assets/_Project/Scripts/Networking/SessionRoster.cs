@@ -22,6 +22,9 @@ namespace OverSmithed.Networking
         /// <summary>Raised on the requesting machine only, when the host refuses one of its local players.</summary>
         public event Action<byte, string> JoinRejected;
 
+        /// <summary>Raised on every machine when a player leaves the session (left, unplugged or disconnected).</summary>
+        public event Action<RosterEntry> PlayerRemoved;
+
         private NetworkList<RosterEntry> _entries;
         private readonly NetworkVariable<bool> _isLocked = new();
 
@@ -195,6 +198,11 @@ namespace OverSmithed.Networking
 
         private void HandleListChanged(NetworkListEvent<RosterEntry> change)
         {
+            // The removed entry is carried by the event, on the server and on clients.
+            if (change.Type is NetworkListEvent<RosterEntry>.EventType.RemoveAt or NetworkListEvent<RosterEntry>.EventType.Remove)
+            {
+                PlayerRemoved?.Invoke(change.Value);
+            }
             Changed?.Invoke();
         }
 

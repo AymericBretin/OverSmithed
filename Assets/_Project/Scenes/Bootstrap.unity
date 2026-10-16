@@ -311,7 +311,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.LocalPlayersManager
   _slotPrefab: {fileID: 1305008280586483621, guid: 397f732d856a0485d9e0fcb0e7ed4dab, type: 3}
-  _actions: {fileID: 0}
 --- !u!114 &1949673697
 MonoBehaviour:
   m_ObjectHideFlags: 0

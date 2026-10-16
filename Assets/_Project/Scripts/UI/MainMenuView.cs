@@ -27,7 +27,10 @@ namespace OverSmithed.UI
             _hostButton.clicked += OnHostClicked;
             _joinButton.clicked += OnJoinClicked;
 
-            _statusLabel.text = string.Empty;
+            // Why we are back here, if we did not leave on purpose (host closed the game, connection lost...).
+            var sessionService = SessionService.Instance;
+            _statusLabel.text = sessionService.ConsumeDisconnectMessage() ?? string.Empty;
+            sessionService.Disconnected += ShowDisconnection;
             _localButton.Focus();
         }
 
@@ -36,6 +39,15 @@ namespace OverSmithed.UI
             _localButton.clicked -= OnLocalClicked;
             _hostButton.clicked -= OnHostClicked;
             _joinButton.clicked -= OnJoinClicked;
+            if (SessionService.Instance != null)
+            {
+                SessionService.Instance.Disconnected -= ShowDisconnection;
+            }
+        }
+
+        private void ShowDisconnection(string message)
+        {
+            _statusLabel.text = message;
         }
 
         private void OnLocalClicked()

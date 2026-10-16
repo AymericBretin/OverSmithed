@@ -25,6 +25,11 @@ namespace OverSmithed.Players
 
         private readonly NetworkVariable<byte> _playerNumber = new();
         private readonly NetworkVariable<byte> _localIndex = new();
+
+        // Written by the owner machine: only it knows whether its device is plugged in.
+        private readonly NetworkVariable<bool> _inputConnected = new(true,
+            NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
         private RosterEntry _pendingEntry;
         private MaterialPropertyBlock _propertyBlock;
 
@@ -51,6 +56,7 @@ namespace OverSmithed.Players
 
             _playerNumber.OnValueChanged += HandleValueChanged;
             _localIndex.OnValueChanged += HandleValueChanged;
+            _inputConnected.OnValueChanged += HandleInputConnectedChanged;
             Refresh();
         }
 
@@ -58,6 +64,8 @@ namespace OverSmithed.Players
         {
             _playerNumber.OnValueChanged -= HandleValueChanged;
             _localIndex.OnValueChanged -= HandleValueChanged;
+            _inputConnected.OnValueChanged -= HandleInputConnectedChanged;
+            BindSlot(null);
         }
 
         private void LateUpdate()
@@ -74,11 +82,45 @@ namespace OverSmithed.Players
             Refresh();
         }
 
+        private void HandleInputConnectedChanged(bool previous, bool current)
+        {
+            Refresh();
+        }
+
+        private void BindSlot(LocalPlayerSlot slot)
+        {
+            if (LocalSlot == slot)
+            {
+                return;
+            }
+            if (LocalSlot != null)
+            {
+                LocalSlot.DeviceLost -= HandleSlotDeviceChanged;
+                LocalSlot.DeviceRegained -= HandleSlotDeviceChanged;
+            }
+            LocalSlot = slot;
+            if (LocalSlot != null)
+            {
+                LocalSlot.DeviceLost += HandleSlotDeviceChanged;
+                LocalSlot.DeviceRegained += HandleSlotDeviceChanged;
+                HandleSlotDeviceChanged(LocalSlot);
+            }
+        }
+
+        // Owner only: publish the device state of the local slot to every machine.
+        private void HandleSlotDeviceChanged(LocalPlayerSlot slot)
+        {
+            if (IsSpawned && IsOwner)
+            {
+                _inputConnected.Value = slot.IsDeviceConnected;
+            }
+        }
+
         private void Refresh()
         {
             if (IsOwner && LocalPlayersManager.Instance != null)
             {
-                LocalSlot = LocalPlayersManager.Instance.FindSlot(LocalIndex);
+                BindSlot(LocalPlayersManager.Instance.FindSlot(LocalIndex));
             }
 
             name = $"NetworkPlayer {PlayerNumber} (client {OwnerClientId}, local {LocalIndex})";
@@ -91,7 +133,8 @@ namespace OverSmithed.Players
             _body.SetPropertyBlock(_propertyBlock);
 
             var ownerTag = IsOwner ? "\n<color=#FFD966>★ à toi</color>" : string.Empty;
-            _label.text = $"Joueur {PlayerNumber}\n<size=24>client {OwnerClientId} · local {LocalIndex}</size>{ownerTag}";
+            var inputTag = _inputConnected.Value ? string.Empty : "\n<color=#FF7766>⚠ manette déconnectée</color>";
+            _label.text = $"Joueur {PlayerNumber}\n<size=24>client {OwnerClientId} · local {LocalIndex}</size>{ownerTag}{inputTag}";
         }
     }
 }

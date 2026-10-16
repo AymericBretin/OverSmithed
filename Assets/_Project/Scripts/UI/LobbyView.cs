@@ -83,11 +83,13 @@ namespace OverSmithed.UI
             if (_roster != null)
             {
                 _roster.Changed -= Refresh;
+                _roster.PlayerRemoved -= AnnounceDeparture;
             }
             _roster = roster;
             if (_roster != null)
             {
                 _roster.Changed += Refresh;
+                _roster.PlayerRemoved += AnnounceDeparture;
             }
             Refresh();
         }
@@ -127,6 +129,11 @@ namespace OverSmithed.UI
             }
             entry = default;
             return false;
+        }
+
+        private void AnnounceDeparture(RosterEntry entry)
+        {
+            ShowMessage($"Joueur {entry.PlayerNumber} a quitté la partie.");
         }
 
         private void ShowMessage(string message)
