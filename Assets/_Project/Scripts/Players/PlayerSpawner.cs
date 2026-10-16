@@ -15,6 +15,8 @@ namespace OverSmithed.Players
     {
         [SerializeField] private NetworkPlayer _playerPrefab;
         [SerializeField] private Transform[] _spawnPoints;
+        [Tooltip("Whether players can move in this scene (off in the lobby, on in game).")]
+        [SerializeField] private bool _allowMovement;
 
         private readonly Dictionary<(ulong clientId, byte localIndex), NetworkPlayer> _players = new();
         private SessionRoster _roster;
@@ -99,7 +101,7 @@ namespace OverSmithed.Players
         {
             var point = _spawnPoints[(entry.PlayerNumber - 1) % _spawnPoints.Length];
             var player = Instantiate(_playerPrefab, point.position, point.rotation);
-            player.Setup(entry);
+            player.Setup(entry, _allowMovement);
             player.NetworkObject.SpawnWithOwnership(entry.ClientId, destroyWithScene: true);
             return player;
         }
