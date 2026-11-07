@@ -1,0 +1,29 @@
+name: Sync board (Blocked / Todo)
+
+# Moves board cards between Blocked and Todo based on issue dependencies.
+# Runs when an issue is closed or reopened, every 6 hours as a safety net, and by hand from the Actions tab.
+on:
+  issues:
+    types: [closed, reopened]
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: sync-board
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move cards between Blocked and Todo
+        env:
+          # Classic personal access token with the "repo" and "project" scopes.
+          # The default GITHUB_TOKEN cannot edit a project owned by a user account.
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          PROJECT_OWNER: AymericBretin
+          PROJECT_NUMBER: "1"
+        run: python3 .github/scripts/sync_board.py
