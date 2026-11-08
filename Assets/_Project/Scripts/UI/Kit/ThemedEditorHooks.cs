@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace OverSmithed.UI
 {
@@ -32,11 +31,13 @@ namespace OverSmithed.UI
                     return;
                 }
                 component.ApplyTheme();
-                var graphic = component.GetComponent<Graphic>();
-                if (graphic != null)
+                foreach (var changed in component.GetComponents<Component>())
                 {
-                    EditorUtility.SetDirty(graphic);
-                    PrefabUtility.RecordPrefabInstancePropertyModifications(graphic);
+                    EditorUtility.SetDirty(changed);
+                    if (PrefabUtility.IsPartOfPrefabInstance(changed))
+                    {
+                        PrefabUtility.RecordPrefabInstancePropertyModifications(changed);
+                    }
                 }
             };
         }

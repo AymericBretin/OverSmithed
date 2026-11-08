@@ -4,8 +4,9 @@ using UnityEditor.SceneManagement;
 namespace OverSmithed.Editor
 {
     /// <summary>
-    /// Pressing Play always starts from the Bootstrap scene, whatever scene is open, so the
-    /// NetworkManager and application services exist (also applies to Multiplayer Play Mode players).
+    /// Pressing Play in a game scene always starts from the Bootstrap scene, so the NetworkManager and
+    /// application services exist (also applies to Multiplayer Play Mode players). Scenes that are not in the
+    /// build list (test scenes like UIKitTest) start by themselves.
     /// </summary>
     [InitializeOnLoad]
     internal static class BootstrapPlayModeStart
@@ -19,6 +20,20 @@ namespace OverSmithed.Editor
             EditorApplication.delayCall += Apply;
             // The Bootstrap scene may be created or moved after this class is initialized.
             EditorApplication.projectChanged += Apply;
+            EditorSceneManager.activeSceneChangedInEditMode += (_, _) => Apply();
+        }
+
+        private static bool IsActiveSceneInBuild()
+        {
+            var activePath = EditorSceneManager.GetActiveScene().path;
+            foreach (var scene in EditorBuildSettings.scenes)
+            {
+                if (scene.path == activePath)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static bool Enabled
@@ -43,7 +58,7 @@ namespace OverSmithed.Editor
 
         private static void Apply()
         {
-            EditorSceneManager.playModeStartScene = Enabled
+            EditorSceneManager.playModeStartScene = Enabled && IsActiveSceneInBuild()
                 ? AssetDatabase.LoadAssetAtPath<SceneAsset>(BootstrapScenePath)
                 : null;
         }

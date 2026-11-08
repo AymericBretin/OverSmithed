@@ -1,16 +1,18 @@
+using System.Collections.Generic;
 using System.Linq;
 using OverSmithed.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace OverSmithed.Editor
 {
     /// <summary>
     /// Pushes the values of a <see cref="UiTheme"/> to every themed component: first in the prefab files of
-    /// the project, then in the open scenes. Parts of prefab instances are skipped, they follow their prefab.
+    /// the project (a prefab is always updated before the prefabs that contain it), then in the open scenes.
+    /// Instances that kept the prefab's style get the same values as their prefab, so no override appears;
+    /// instances that chose another style or color are updated too.
     /// </summary>
     internal static class UiThemeApplier
     {
@@ -28,9 +30,8 @@ namespace OverSmithed.Editor
         public static void Apply(UiTheme theme)
         {
             var prefabCount = 0;
-            foreach (var guid in AssetDatabase.FindAssets("t:Prefab", new[] { ProjectFolder }))
+            foreach (var path in PrefabsInDependencyOrder())
             {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
                 var root = PrefabUtility.LoadPrefabContents(path);
                 try
                 {
@@ -65,26 +66,65 @@ namespace OverSmithed.Editor
             Debug.Log($"[UiTheme] {theme.name} applied to {prefabCount} prefab(s) and {sceneCount} open scene(s).");
         }
 
-        private static int ApplyTo(System.Collections.Generic.IEnumerable<IThemed> components, UiTheme theme)
+        private static int ApplyTo(IEnumerable<IThemed> components, UiTheme theme)
         {
             var count = 0;
             foreach (var themed in components)
             {
-                var component = (Component)themed;
-                // A nested prefab instance gets its look from its own prefab file.
-                if (themed.Theme != theme || PrefabUtility.IsPartOfPrefabInstance(component))
+                if (themed.Theme != theme)
                 {
                     continue;
                 }
                 themed.ApplyTheme();
-                var graphic = component.GetComponent<Graphic>();
-                if (graphic != null)
-                {
-                    EditorUtility.SetDirty(graphic);
-                }
+                MarkChanged(((Component)themed).gameObject);
                 count++;
             }
             return count;
+        }
+
+        /// <summary>Saves the changes made by ApplyTheme on the components of this object.</summary>
+        public static void MarkChanged(GameObject gameObject)
+        {
+            foreach (var component in gameObject.GetComponents<Component>())
+            {
+                EditorUtility.SetDirty(component);
+                if (PrefabUtility.IsPartOfPrefabInstance(component))
+                {
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(component);
+                }
+            }
+        }
+
+        // A prefab that contains another prefab comes after it, so it sees the already updated values.
+        private static List<string> PrefabsInDependencyOrder()
+        {
+            var paths = AssetDatabase.FindAssets("t:Prefab", new[] { ProjectFolder })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .ToHashSet();
+            var ordered = new List<string>();
+            var visited = new HashSet<string>();
+
+            void Visit(string path)
+            {
+                if (!visited.Add(path))
+                {
+                    return;
+                }
+                foreach (var dependency in AssetDatabase.GetDependencies(path, false))
+                {
+                    if (paths.Contains(dependency))
+                    {
+                        Visit(dependency);
+                    }
+                }
+                ordered.Add(path);
+            }
+
+            foreach (var path in paths.OrderBy(p => p))
+            {
+                Visit(path);
+            }
+            return ordered;
         }
     }
 
