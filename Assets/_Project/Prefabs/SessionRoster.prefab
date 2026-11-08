@@ -73,3 +73,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Networking.SessionRoster
   ShowTopMostFoldoutHeaderGroup: 1
+  _skins: {fileID: 11400000, guid: d12cfceb4a48149018043ecf2c390e36, type: 2}

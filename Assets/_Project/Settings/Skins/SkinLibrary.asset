@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48c2a0ae11ba3471cae3e14f07ed5118, type: 3}
+  m_Name: SkinLibrary
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.SkinLibrary
+  _skins:
+  - {fileID: 11400000, guid: 11ea1222d267b4d32a6173c998a20cee, type: 2}
+  - {fileID: 11400000, guid: 82cf1d5b50bb5428bbb0d77804aa9ebe, type: 2}
+  - {fileID: 11400000, guid: 7f5055c900752434c95434b17721d060, type: 2}
+  - {fileID: 11400000, guid: 77d7f167a59ff4b8d9501a40d3282e99, type: 2}
+  - {fileID: 11400000, guid: cf24a76fa64ea4849909c1c076b80edb, type: 2}
