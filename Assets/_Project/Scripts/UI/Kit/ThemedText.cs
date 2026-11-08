@@ -37,9 +37,11 @@ namespace OverSmithed.UI
                 {
                     text.font = style.Font;
                 }
-                if (style.Material != null)
+                // No preset: the font's own material (not a preset left by a previous style).
+                var material = style.Material != null ? style.Material : text.font.material;
+                if (text.fontSharedMaterial != material)
                 {
-                    text.fontSharedMaterial = style.Material;
+                    text.fontSharedMaterial = material;
                 }
                 text.fontSize = style.Size;
                 text.fontStyle = style.Style;

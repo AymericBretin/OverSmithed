@@ -20,6 +20,8 @@ namespace OverSmithed.UI
         Success = 11,
         Disabled = 12,
         Shadow = 13,
+        /// <summary>Darkens what is under it: the inside of checkboxes and text fields.</summary>
+        Inset = 14,
     }
 
     /// <summary>Text styles: font, size and font style come from the <see cref="UiTheme"/> asset.</summary>
@@ -39,8 +41,8 @@ namespace OverSmithed.UI
         PanelWood = 1,
         PanelParchment = 2,
         ButtonNormal = 3,
-        ButtonPressed = 4,
-        ButtonDisabled = 5,
+        // 4 and 5 were "ButtonPressed" and "ButtonDisabled" (removed: the button squashes when pressed and is
+        // greyed when disabled). Don't reuse 4 and 5.
         FocusFrame = 6,
         BarTrack = 7,
         BarFill = 8,
@@ -59,5 +61,8 @@ namespace OverSmithed.UI
         ArrowRight = 21,
         Close = 22,
         ArrowDown = 23,
+        Ribbon = 24,
+        /// <summary>Plain white rounded rectangle, tinted by its color (dark inset of fields, scrollbar track).</summary>
+        RoundedRect = 25,
     }
 }

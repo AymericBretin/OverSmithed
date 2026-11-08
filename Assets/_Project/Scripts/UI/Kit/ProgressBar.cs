@@ -12,7 +12,8 @@ namespace OverSmithed.UI
         [SerializeField] private RectTransform _fill;
         [SerializeField] private ThemedImage _fillImage;
         [SerializeField, Range(0f, 1f)] private float _value = 1f;
-        [SerializeField] private UiColor _color = UiColor.Success;
+        [Tooltip("Tint of the fill sprite. White: the sprite's own color.")]
+        [SerializeField] private UiColor _color = UiColor.White;
         [Tooltip("Below this value, the bar uses the low color. 0: never.")]
         [SerializeField, Range(0f, 1f)] private float _lowThreshold;
         [SerializeField] private UiColor _lowColor = UiColor.Danger;
@@ -38,6 +39,11 @@ namespace OverSmithed.UI
             {
                 // The fill is stretched by its anchors, so a 9-sliced sprite keeps its borders.
                 _fill.anchorMax = new Vector2(_value, _fill.anchorMax.y);
+            }
+            if (_fill != null && _fill.TryGetComponent<UnityEngine.UI.Image>(out var fillImage))
+            {
+                // An empty bar shows only its track (a 0-wide sliced image would still draw its rounded ends).
+                fillImage.enabled = _value > 0f;
             }
             if (_fillImage != null)
             {

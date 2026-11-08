@@ -33,7 +33,8 @@ namespace OverSmithed.UI
                     continue;
                 }
                 var full = i < _value;
-                _stars[i].SetLook(full ? UiSprite.StarFull : UiSprite.StarEmpty, full ? UiColor.Gold : UiColor.Disabled);
+                // The star sprites have their own colors: no tint.
+                _stars[i].SetLook(full ? UiSprite.StarFull : UiSprite.StarEmpty, UiColor.White);
             }
         }
 

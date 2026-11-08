@@ -166,6 +166,7 @@ namespace OverSmithed.UI
                 UiColor.Success => Hex(0x6DBA4A),
                 UiColor.Disabled => Hex(0x9A8F80),
                 UiColor.Shadow => new Color(0f, 0f, 0f, 0.5f),
+                UiColor.Inset => new Color(0f, 0f, 0f, 0.4f),
                 _ => Color.magenta,
             };
         }
