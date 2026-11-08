@@ -1,0 +1,158 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bd3f06e4d04a4077ba1cd859ada66d4, type: 3}
+  m_Name: UiTheme
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.UI.UiTheme
+  _colors:
+  - Name: White
+    Key: 0
+    Value: {r: 1, g: 1, b: 1, a: 1}
+  - Name: Wood
+    Key: 1
+    Value: {r: 0.54509807, g: 0.3529412, b: 0.16862746, a: 1}
+  - Name: WoodDark
+    Key: 2
+    Value: {r: 0.3529412, g: 0.22745098, b: 0.13333334, a: 1}
+  - Name: WoodLight
+    Key: 3
+    Value: {r: 0.6901961, g: 0.47843137, b: 0.27058825, a: 1}
+  - Name: Parchment
+    Key: 4
+    Value: {r: 0.9490196, g: 0.8901961, b: 0.7607843, a: 1}
+  - Name: ParchmentDark
+    Key: 5
+    Value: {r: 0.8509804, g: 0.76862746, b: 0.6039216, a: 1}
+  - Name: Gold
+    Key: 6
+    Value: {r: 0.9490196, g: 0.7019608, b: 0.23921569, a: 1}
+  - Name: GoldDark
+    Key: 7
+    Value: {r: 0.72156864, g: 0.5019608, b: 0.12156863, a: 1}
+  - Name: TextDark
+    Key: 8
+    Value: {r: 0.23137255, g: 0.15294118, b: 0.08627451, a: 1}
+  - Name: TextLight
+    Key: 9
+    Value: {r: 1, g: 0.9647059, b: 0.8784314, a: 1}
+  - Name: Danger
+    Key: 10
+    Value: {r: 0.8509804, g: 0.28235295, b: 0.23137255, a: 1}
+  - Name: Success
+    Key: 11
+    Value: {r: 0.42745098, g: 0.7294118, b: 0.2901961, a: 1}
+  - Name: Disabled
+    Key: 12
+    Value: {r: 0.6039216, g: 0.56078434, b: 0.5019608, a: 1}
+  - Name: Shadow
+    Key: 13
+    Value: {r: 0, g: 0, b: 0, a: 0.5}
+  - Name: Inset
+    Key: 14
+    Value: {r: 0, g: 0, b: 0, a: 0.4}
+  _textStyles:
+  - Name: Title
+    Key: 0
+    Font: {fileID: 11400000, guid: 3002cb49e861f40ffaa546891421912c, type: 2}
+    Material: {fileID: 0}
+    Size: 72
+    Style: 0
+  - Name: Heading
+    Key: 1
+    Font: {fileID: 11400000, guid: 3002cb49e861f40ffaa546891421912c, type: 2}
+    Material: {fileID: 0}
+    Size: 48
+    Style: 0
+  - Name: Body
+    Key: 2
+    Font: {fileID: 11400000, guid: 566f27bb910dc4fc29ce87c8410f09e6, type: 2}
+    Material: {fileID: 0}
+    Size: 32
+    Style: 0
+  - Name: Small
+    Key: 3
+    Font: {fileID: 11400000, guid: 566f27bb910dc4fc29ce87c8410f09e6, type: 2}
+    Material: {fileID: 0}
+    Size: 24
+    Style: 0
+  - Name: Button
+    Key: 4
+    Font: {fileID: 11400000, guid: 3002cb49e861f40ffaa546891421912c, type: 2}
+    Material: {fileID: 2100000, guid: e643f3f0dea46446caa1ddf3a4e0a70b, type: 2}
+    Size: 36
+    Style: 0
+  _sprites:
+  - Name: PanelWood
+    Key: 1
+    Sprite: {fileID: 21300000, guid: b7cd9f237e4114556bf09f63a5d80685, type: 3}
+  - Name: PanelParchment
+    Key: 2
+    Sprite: {fileID: 21300000, guid: 3ffc17956ff3f4d9ea7dd9fce3c93e76, type: 3}
+  - Name: ButtonNormal
+    Key: 3
+    Sprite: {fileID: 21300000, guid: bad590fd07fe246d6be19df5d166fc2b, type: 3}
+  - Name: FocusFrame
+    Key: 6
+    Sprite: {fileID: 21300000, guid: 3bf837a9a19a64265944607800080f45, type: 3}
+  - Name: BarTrack
+    Key: 7
+    Sprite: {fileID: 21300000, guid: 98453a2ce6ecb4bfbbfb20ce26444f6d, type: 3}
+  - Name: BarFill
+    Key: 8
+    Sprite: {fileID: 21300000, guid: b75308d496fe04ebe9cbde104a76daf3, type: 3}
+  - Name: SliderHandle
+    Key: 9
+    Sprite: {fileID: 0}
+  - Name: Checkbox
+    Key: 10
+    Sprite: {fileID: 21300000, guid: bad590fd07fe246d6be19df5d166fc2b, type: 3}
+  - Name: Checkmark
+    Key: 11
+    Sprite: {fileID: 21300000, guid: 130291b09ea5b4fc6a2396b7e0e9dfda, type: 3}
+  - Name: InputField
+    Key: 12
+    Sprite: {fileID: 21300000, guid: bad590fd07fe246d6be19df5d166fc2b, type: 3}
+  - Name: DialogBox
+    Key: 14
+    Sprite: {fileID: 21300000, guid: feaf9b33ee0244630837c6a7dc74f90c, type: 3}
+  - Name: StarFull
+    Key: 15
+    Sprite: {fileID: 21300000, guid: aeb0cd0c712a54663b92a0ebf06e33a0, type: 3}
+  - Name: StarEmpty
+    Key: 16
+    Sprite: {fileID: 21300000, guid: 5f530adb6759540c38312ee707811f05, type: 3}
+  - Name: Coin
+    Key: 17
+    Sprite: {fileID: 21300000, guid: 89c75e9de3ceb4c3698979638cbaf259, type: 3}
+  - Name: Clock
+    Key: 18
+    Sprite: {fileID: 21300000, guid: 2dc44d22e29104ccabc4f6dd67b4948a, type: 3}
+  - Name: Lock
+    Key: 19
+    Sprite: {fileID: 21300000, guid: f0605ce851327487e9a1ecbd13560799, type: 3}
+  - Name: ArrowLeft
+    Key: 20
+    Sprite: {fileID: 21300000, guid: 7d3a374921ba047038326df0a5636cb3, type: 3}
+  - Name: ArrowRight
+    Key: 21
+    Sprite: {fileID: 21300000, guid: 56aa76ed4c9ec4c928b0e291212139b7, type: 3}
+  - Name: Close
+    Key: 22
+    Sprite: {fileID: 21300000, guid: a33eb9b9bae0e43bba8e3c1fe2ea37b7, type: 3}
+  - Name: ArrowDown
+    Key: 23
+    Sprite: {fileID: 21300000, guid: 53121c76876f24e738f664845b04054a, type: 3}
+  - Name: Ribbon
+    Key: 24
+    Sprite: {fileID: 21300000, guid: 6b6b7ca679c2a4a0392aad1aa1f5b557, type: 3}
+  - Name: RoundedRect
+    Key: 25
+    Sprite: {fileID: 21300000, guid: b50171b57a7de4e21961a610216f118c, type: 3}
