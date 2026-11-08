@@ -96,10 +96,15 @@ namespace OverSmithed.UI
 
         /// <summary>
         /// Gives every key of the enums an entry (with a default value), so a new color, style or sprite shows up
-        /// in the Inspector by itself.
+        /// in the Inspector by itself. Entries of removed keys are deleted.
         /// </summary>
         public void FillMissingEntries()
         {
+            // Entries whose key was removed from the enums.
+            _colors.RemoveAll(e => !Enum.IsDefined(typeof(UiColor), e.Key));
+            _textStyles.RemoveAll(e => !Enum.IsDefined(typeof(UiTextStyle), e.Key));
+            _sprites.RemoveAll(e => !Enum.IsDefined(typeof(UiSprite), e.Key) || e.Key == UiSprite.None);
+
             foreach (UiColor key in Enum.GetValues(typeof(UiColor)))
             {
                 if (_colors.FindIndex(e => e.Key == key) < 0)

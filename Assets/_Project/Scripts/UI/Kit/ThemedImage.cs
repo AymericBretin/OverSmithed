@@ -24,6 +24,14 @@ namespace OverSmithed.UI
             ApplyTheme();
         }
 
+        /// <summary>Changes the sprite and the color at runtime, for example a star becoming full.</summary>
+        public void SetLook(UiSprite sprite, UiColor color)
+        {
+            _sprite = sprite;
+            _color = color;
+            ApplyTheme();
+        }
+
         public void ApplyTheme()
         {
             if (_theme == null)

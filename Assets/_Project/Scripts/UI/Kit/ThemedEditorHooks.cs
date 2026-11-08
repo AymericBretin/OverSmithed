@@ -30,13 +30,25 @@ namespace OverSmithed.UI
                 {
                     return;
                 }
-                component.ApplyTheme();
-                foreach (var changed in component.GetComponents<Component>())
+                // OnValidate also runs when a scene is opened: only mark as changed what really changed,
+                // otherwise opening a scene would always ask to save it.
+                var components = component.GetComponents<Component>();
+                var before = new string[components.Length];
+                for (var i = 0; i < components.Length; i++)
                 {
-                    EditorUtility.SetDirty(changed);
-                    if (PrefabUtility.IsPartOfPrefabInstance(changed))
+                    before[i] = EditorJsonUtility.ToJson(components[i]);
+                }
+                component.ApplyTheme();
+                for (var i = 0; i < components.Length; i++)
+                {
+                    if (EditorJsonUtility.ToJson(components[i]) == before[i])
                     {
-                        PrefabUtility.RecordPrefabInstancePropertyModifications(changed);
+                        continue;
+                    }
+                    EditorUtility.SetDirty(components[i]);
+                    if (PrefabUtility.IsPartOfPrefabInstance(components[i]))
+                    {
+                        PrefabUtility.RecordPrefabInstancePropertyModifications(components[i]);
                     }
                 }
             };

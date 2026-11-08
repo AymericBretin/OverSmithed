@@ -123,9 +123,6 @@ MonoBehaviour:
   - Name: InputField
     Key: 12
     Sprite: {fileID: 0}
-  - Name: Tag
-    Key: 13
-    Sprite: {fileID: 0}
   - Name: DialogBox
     Key: 14
     Sprite: {fileID: 0}
@@ -152,4 +149,7 @@ MonoBehaviour:
     Sprite: {fileID: 0}
   - Name: Close
     Key: 22
+    Sprite: {fileID: 0}
+  - Name: ArrowDown
+    Key: 23
     Sprite: {fileID: 0}

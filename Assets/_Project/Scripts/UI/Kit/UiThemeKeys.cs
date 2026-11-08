@@ -48,7 +48,7 @@ namespace OverSmithed.UI
         Checkbox = 10,
         Checkmark = 11,
         InputField = 12,
-        Tag = 13,
+        // 13 was "Tag" (removed: no tag above players). Don't reuse 13.
         DialogBox = 14,
         StarFull = 15,
         StarEmpty = 16,
@@ -58,5 +58,6 @@ namespace OverSmithed.UI
         ArrowLeft = 20,
         ArrowRight = 21,
         Close = 22,
+        ArrowDown = 23,
     }
 }
