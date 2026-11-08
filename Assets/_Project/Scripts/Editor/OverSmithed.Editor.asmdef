@@ -1,7 +1,9 @@
 {
     "name": "OverSmithed.Editor",
     "rootNamespace": "OverSmithed.Editor",
-    "references": [],
+    "references": [
+        "OverSmithed.Runtime"
+    ],
     "includePlatforms": [
         "Editor"
     ],

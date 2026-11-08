@@ -7,7 +7,9 @@
         "Unity.Services.Authentication",
         "Unity.Services.Multiplayer",
         "Unity.InputSystem",
-        "Unity.Collections"
+        "Unity.Collections",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
