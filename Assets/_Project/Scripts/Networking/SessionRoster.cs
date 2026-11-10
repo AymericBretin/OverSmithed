@@ -1,4 +1,5 @@
 using System;
+using OverSmithed.Players;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -24,6 +25,9 @@ namespace OverSmithed.Networking
 
         /// <summary>Raised on every machine when a player leaves the session (left, unplugged or disconnected).</summary>
         public event Action<RosterEntry> PlayerRemoved;
+
+        [Tooltip("The host gives each new player the first skin of this list that nobody uses.")]
+        [SerializeField] private SkinLibrary _skins;
 
         private NetworkList<RosterEntry> _entries;
         private readonly NetworkVariable<bool> _isLocked = new();
@@ -136,6 +140,7 @@ namespace OverSmithed.Networking
                 ClientId = clientId,
                 LocalIndex = localIndex,
                 PlayerNumber = FirstFreePlayerNumber(),
+                SkinIndex = FirstFreeSkin(),
                 DeviceLabel = deviceLabel
             });
         }
@@ -182,6 +187,25 @@ namespace OverSmithed.Networking
                 }
             }
             return 0;
+        }
+
+        private byte FirstFreeSkin()
+        {
+            var count = _skins != null ? Mathf.Min(_skins.Count, byte.MaxValue + 1) : 0;
+            for (var skin = 0; skin < count; skin++)
+            {
+                var used = false;
+                foreach (var entry in _entries)
+                {
+                    used |= entry.SkinIndex == skin;
+                }
+                if (!used)
+                {
+                    return (byte)skin;
+                }
+            }
+            // More players than skins: two players share one (keep more skins than MaxPlayers to avoid it).
+            return count > 0 ? (byte)(_entries.Count % count) : (byte)0;
         }
 
         private int IndexOf(ulong clientId, byte localIndex)

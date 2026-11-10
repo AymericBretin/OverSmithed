@@ -85,14 +85,18 @@ namespace OverSmithed.Players
                 _players.Remove(key);
             }
 
-            // Spawn avatars for new entries.
+            // Spawn avatars for new entries, and keep the skin of the others up to date.
             for (var i = 0; i < _roster.Count; i++)
             {
                 var entry = _roster[i];
                 var key = (entry.ClientId, entry.LocalIndex);
-                if (!_players.ContainsKey(key))
+                if (!_players.TryGetValue(key, out var player))
                 {
                     _players[key] = Spawn(entry);
+                }
+                else
+                {
+                    player.SetSkin(entry.SkinIndex);
                 }
             }
         }

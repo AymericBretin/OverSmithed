@@ -6,14 +6,15 @@ namespace OverSmithed.Networking
 {
     /// <summary>
     /// One player of the session: the machine that owns it (<see cref="ClientId"/>), the input slot on that
-    /// machine (<see cref="LocalIndex"/>) and the player number shown to everyone (1..4).
-    /// (ClientId, LocalIndex) is unique across the session.
+    /// machine (<see cref="LocalIndex"/>), the player number shown to everyone (1..4) and the skin
+    /// (<see cref="SkinIndex"/>, an index in the SkinLibrary). (ClientId, LocalIndex) is unique across the session.
     /// </summary>
     public struct RosterEntry : INetworkSerializable, IEquatable<RosterEntry>
     {
         public ulong ClientId;
         public byte LocalIndex;
         public byte PlayerNumber;
+        public byte SkinIndex;
         public FixedString32Bytes DeviceLabel;
 
         public bool Matches(ulong clientId, byte localIndex)
@@ -26,6 +27,7 @@ namespace OverSmithed.Networking
             serializer.SerializeValue(ref ClientId);
             serializer.SerializeValue(ref LocalIndex);
             serializer.SerializeValue(ref PlayerNumber);
+            serializer.SerializeValue(ref SkinIndex);
             serializer.SerializeValue(ref DeviceLabel);
         }
 
@@ -34,6 +36,7 @@ namespace OverSmithed.Networking
             return ClientId == other.ClientId
                    && LocalIndex == other.LocalIndex
                    && PlayerNumber == other.PlayerNumber
+                   && SkinIndex == other.SkinIndex
                    && DeviceLabel.Equals(other.DeviceLabel);
         }
 
