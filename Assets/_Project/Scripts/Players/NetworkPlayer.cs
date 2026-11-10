@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using OverSmithed.Networking;
 using Unity.Netcode;
 using UnityEngine;
@@ -12,6 +13,18 @@ namespace OverSmithed.Players
     /// </summary>
     public class NetworkPlayer : NetworkBehaviour
     {
+        private static readonly List<NetworkPlayer> SpawnedPlayers = new();
+
+        /// <summary>Every avatar currently spawned, on this machine (local and remote players).</summary>
+        public static IReadOnlyList<NetworkPlayer> Spawned => SpawnedPlayers;
+
+        // Domain reload is disabled on entering Play Mode: statics must be reset by hand.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            SpawnedPlayers.Clear();
+        }
+
         [SerializeField] private SkinLibrary _skins;
         [Tooltip("The skin's visual is created under this transform.")]
         [SerializeField] private Transform _visualRoot;
@@ -73,11 +86,13 @@ namespace OverSmithed.Players
             _playerNumber.OnValueChanged += HandleValueChanged;
             _localIndex.OnValueChanged += HandleValueChanged;
             _skinIndex.OnValueChanged += HandleValueChanged;
+            SpawnedPlayers.Add(this);
             Refresh();
         }
 
         public override void OnNetworkDespawn()
         {
+            SpawnedPlayers.Remove(this);
             _playerNumber.OnValueChanged -= HandleValueChanged;
             _localIndex.OnValueChanged -= HandleValueChanged;
             _skinIndex.OnValueChanged -= HandleValueChanged;
