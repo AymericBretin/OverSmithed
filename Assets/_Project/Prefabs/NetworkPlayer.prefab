@@ -45,6 +45,7 @@ GameObject:
   - component: {fileID: 520663538711925792}
   - component: {fileID: 8033737775116665440}
   - component: {fileID: 7611732908123327168}
+  - component: {fileID: 167118907275330572}
   m_Layer: 0
   m_Name: NetworkPlayer
   m_TagString: Untagged
@@ -197,3 +198,17 @@ MonoBehaviour:
   _speed: 5
   _turnSpeed: 720
   _arenaHalfSize: 9.5
+--- !u!114 &167118907275330572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450035355314237043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f22009c8a3cfa40f6b83c4cefefb7f36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.PlayerAnimator
+  _dampTime: 0.1
+  _teleportFactor: 3

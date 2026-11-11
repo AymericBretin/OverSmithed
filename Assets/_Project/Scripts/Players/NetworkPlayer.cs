@@ -56,6 +56,9 @@ namespace OverSmithed.Players
         /// <summary>The local input slot driving this player. Only set on the owner machine.</summary>
         public LocalPlayerSlot LocalSlot { get; private set; }
 
+        /// <summary>Animator of the current skin visual (null while there is no visual). Exists on every machine.</summary>
+        public Animator VisualAnimator { get; private set; }
+
         /// <summary>Server only, before spawning: the roster entry this avatar represents.</summary>
         public void Setup(RosterEntry entry, bool canMove)
         {
@@ -155,6 +158,7 @@ namespace OverSmithed.Players
             {
                 Destroy(_visual);
                 _visual = null;
+                VisualAnimator = null;
             }
             _visualSkinIndex = SkinIndex;
             if (skin == null || skin.Prefab == null)
@@ -163,6 +167,7 @@ namespace OverSmithed.Players
                 return;
             }
             _visual = Instantiate(skin.Prefab, _visualRoot != null ? _visualRoot : transform, false);
+            VisualAnimator = _visual.GetComponentInChildren<Animator>();
         }
     }
 }

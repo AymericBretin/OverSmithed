@@ -22,6 +22,9 @@ namespace OverSmithed.Players
         private LocalPlayerSlot _slot;
         private InputAction _moveAction;
 
+        /// <summary>Top speed in meters per second (stick or keys pushed all the way).</summary>
+        public float MaxSpeed => _speed;
+
         private void Awake()
         {
             _player = GetComponent<NetworkPlayer>();
