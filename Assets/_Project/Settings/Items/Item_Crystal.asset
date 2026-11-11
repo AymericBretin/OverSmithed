@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e83523247963a4cf1b9a0f8b0231e05a, type: 3}
+  m_Name: Item_Crystal
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Items.ItemDefinition
+  _id: 4
+  _displayName: Crystal
+  _icon: {fileID: 0}
+  _prefab: {fileID: 503236446194445071, guid: 79013b125c00f4cd28a2591fc9f74337, type: 3}
