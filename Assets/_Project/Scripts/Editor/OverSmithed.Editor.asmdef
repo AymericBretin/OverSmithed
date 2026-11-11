@@ -2,7 +2,8 @@
     "name": "OverSmithed.Editor",
     "rootNamespace": "OverSmithed.Editor",
     "references": [
-        "OverSmithed.Runtime"
+        "OverSmithed.Runtime",
+        "Unity.Netcode.Runtime"
     ],
     "includePlatforms": [
         "Editor"
