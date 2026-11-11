@@ -1,3 +1,4 @@
+using OverSmithed.Interaction;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -135,6 +136,12 @@ namespace OverSmithed.Items
                 return;
             }
             _visual = Instantiate(definition.Prefab, _visualRoot != null ? _visualRoot : transform, false);
+
+            // A highlighted item that changes kind must also highlight its new visual.
+            if (TryGetComponent<Interactable>(out var interactable))
+            {
+                interactable.RefreshHighlight();
+            }
         }
     }
 }

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3471307396285712041}
   - component: {fileID: 7404468892539519595}
+  - component: {fileID: 2053585898880168058}
   m_Layer: 0
   m_Name: Counter_Graybox
   m_TagString: Untagged
@@ -54,6 +55,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 0.8, z: 1}
   m_Center: {x: 0, y: 0.4, z: 0}
+--- !u!114 &2053585898880168058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2868178400638795737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1999a95c247db4fb08cb5a073716415f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Interaction.Interactable
+  _area: {fileID: 0}
+  _highlightBrightness: 1.4
 --- !u!1001 &956917664944204194
 PrefabInstance:
   m_ObjectHideFlags: 0
