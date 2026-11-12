@@ -6556,6 +6556,111 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1701477750852675232, guid: cb5fffea212044433b8da93b65968ec4, type: 3}
   m_PrefabInstance: {fileID: 404459494}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &405222975
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 740766937965141263, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_Name
+      value: HUD
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1343134519}
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+--- !u!224 &405222976 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1548198930146306375, guid: 2aaaa5abb22e8447db4025e99505587f, type: 3}
+  m_PrefabInstance: {fileID: 405222975}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &405511476
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -20149,6 +20254,221 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 114819488795393346, guid: add2cf388de3f4b6988980193d417384, type: 3}
   m_PrefabInstance: {fileID: 1339666191}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1343134518
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1343134519}
+  - component: {fileID: 1343134521}
+  - component: {fileID: 1343134520}
+  m_Layer: 5
+  m_Name: OrderCards
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1343134519
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1343134518}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 405222976}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 24, y: -16}
+  m_SizeDelta: {x: -48, y: 230}
+  m_Pivot: {x: 0, y: 1}
+--- !u!114 &1343134520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1343134518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 013e2873d61da43c0b292b8ceab7feff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.UI.FakeOrderFeed
+  _hud: {fileID: 1343134521}
+  _recipes:
+  - ResultName: Wooden Sword
+    ResultIcon: {fileID: 0}
+    Groups:
+    - Materials:
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      Stations: 03000000i
+    - Materials:
+      - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
+      Stations: 
+  - ResultName: Iron Sword
+    ResultIcon: {fileID: 0}
+    Groups:
+    - Materials:
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      Stations: 0100000002000000i
+    - Materials:
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      Stations: 03000000i
+  - ResultName: Magic Staff
+    ResultIcon: {fileID: 0}
+    Groups:
+    - Materials:
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      Stations: 03000000i
+    - Materials:
+      - {fileID: 11400000, guid: 98f17754fd3b249389a8144e8119d512, type: 2}
+      Stations: 
+    - Materials:
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      Stations: 0100000002000000i
+  - ResultName: Shield
+    ResultIcon: {fileID: 0}
+    Groups:
+    - Materials:
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
+      Stations: 04000000i
+  - ResultName: Iron Helmet
+    ResultIcon: {fileID: 0}
+    Groups:
+    - Materials:
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      Stations: 0100000002000000i
+    - Materials:
+      - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
+      Stations: 
+  - ResultName: Knight Armor
+    ResultIcon: {fileID: 0}
+    Groups:
+    - Materials:
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      Stations: 0100000002000000i
+    - Materials:
+      - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
+      - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
+      Stations: 03000000i
+    - Materials:
+      - {fileID: 11400000, guid: 98f17754fd3b249389a8144e8119d512, type: 2}
+      Stations: 
+    - Materials:
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      Stations: 0300000004000000i
+  - ResultName: Battle Axe
+    ResultIcon: {fileID: 0}
+    Groups:
+    - Materials:
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      Stations: 0100000002000000i
+    - Materials:
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      Stations: 03000000i
+    - Materials:
+      - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
+      Stations: 
+  - ResultName: Wizard Staff
+    ResultIcon: {fileID: 0}
+    Groups:
+    - Materials:
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      Stations: 03000000i
+    - Materials:
+      - {fileID: 11400000, guid: 98f17754fd3b249389a8144e8119d512, type: 2}
+      - {fileID: 11400000, guid: 98f17754fd3b249389a8144e8119d512, type: 2}
+      Stations: 
+    - Materials:
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      Stations: 01000000i
+  - ResultName: Crystal Sword
+    ResultIcon: {fileID: 0}
+    Groups:
+    - Materials:
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      Stations: 0100000002000000i
+    - Materials:
+      - {fileID: 11400000, guid: 98f17754fd3b249389a8144e8119d512, type: 2}
+      Stations: 03000000i
+    - Materials:
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      Stations: 03000000i
+    - Materials:
+      - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
+      Stations: 
+  - ResultName: Royal Shield
+    ResultIcon: {fileID: 0}
+    Groups:
+    - Materials:
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      Stations: 03000000i
+    - Materials:
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      Stations: 0100000002000000i
+    - Materials:
+      - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
+      Stations: 
+    - Materials:
+      - {fileID: 11400000, guid: 98f17754fd3b249389a8144e8119d512, type: 2}
+      Stations: 04000000i
+  - ResultName: Dragon Lance
+    ResultIcon: {fileID: 0}
+    Groups:
+    - Materials:
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      Stations: 0100000002000000i
+    - Materials:
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
+      Stations: 03000000i
+    - Materials:
+      - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
+      Stations: 03000000i
+    - Materials:
+      - {fileID: 11400000, guid: 98f17754fd3b249389a8144e8119d512, type: 2}
+      Stations: 
+    - Materials:
+      - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
+      Stations: 01000000i
+  _autoPlay: 1
+  _ordersAtStart: 2
+  _maxOrders: 5
+  _spawnInterval: {x: 6, y: 12}
+  _patience: {x: 30, y: 60}
+  _deliverChance: 0.5
+--- !u!114 &1343134521
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1343134518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9bc7acdc10cf40649f5288ab47b7d7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.UI.OrderCardsHud
+  _cardPrefab: {fileID: 4322938367026720418, guid: 6057dd220e4164688872d167864f22ec, type: 3}
+  _spacing: 12
+  _moveSmoothTime: 0.18
 --- !u!1001 &1346745365
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33203,3 +33523,4 @@ SceneRoots:
   - {fileID: 130046809}
   - {fileID: 767801609}
   - {fileID: 1969746667}
+  - {fileID: 405222975}
