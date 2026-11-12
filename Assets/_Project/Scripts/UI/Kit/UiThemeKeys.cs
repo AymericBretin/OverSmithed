@@ -64,5 +64,10 @@ namespace OverSmithed.UI
         Ribbon = 24,
         /// <summary>Plain white rounded rectangle, tinted by its color (dark inset of fields, scrollbar track).</summary>
         RoundedRect = 25,
+        /// <summary>Station icons, shown under the materials of an order card (flame, anvil, saw, blueprint).</summary>
+        StationFurnace = 26,
+        StationAnvil = 27,
+        StationWorkbench = 28,
+        StationAssemblyTable = 29,
     }
 }

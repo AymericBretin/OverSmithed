@@ -156,3 +156,15 @@ MonoBehaviour:
   - Name: RoundedRect
     Key: 25
     Sprite: {fileID: 21300000, guid: b50171b57a7de4e21961a610216f118c, type: 3}
+  - Name: StationFurnace
+    Key: 26
+    Sprite: {fileID: 0}
+  - Name: StationAnvil
+    Key: 27
+    Sprite: {fileID: 0}
+  - Name: StationWorkbench
+    Key: 28
+    Sprite: {fileID: 0}
+  - Name: StationAssemblyTable
+    Key: 29
+    Sprite: {fileID: 0}
