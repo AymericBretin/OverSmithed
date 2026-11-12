@@ -1421,6 +1421,51 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 114819488795393346, guid: add2cf388de3f4b6988980193d417384, type: 3}
   m_PrefabInstance: {fileID: 57352729}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &59112161
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 59112163}
+  - component: {fileID: 59112162}
+  m_Layer: 0
+  m_Name: PlayArea
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &59112162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59112161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e76257471a5c34bf2a7a960570ed7d47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Core.PlayArea
+  _size: {x: 16, y: 1.2, z: 8}
+--- !u!4 &59112163
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59112161}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &69920411
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5835,7 +5880,7 @@ Transform:
   m_GameObject: {fileID: 390450270}
   serializedVersion: 2
   m_LocalRotation: {x: 0.4694716, y: 0, z: 0, w: 0.8829476}
-  m_LocalPosition: {x: 0, y: 17.4, z: -9.74}
+  m_LocalPosition: {x: 0, y: 17.79604, z: -9.679717}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5897,9 +5942,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a44bcbbafe16a49748fb27b59742e1d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Core.GameCameraDrift
+  _playArea: {fileID: 59112162}
+  _pitch: 56
+  _minDistance: 18
+  _maxDistance: 26
+  _topHud: {fileID: 1343134519}
+  _topMargin: 0.23
+  _bottomMargin: 0.03
+  _sideMargin: 0.02
   _follow: 0.15
   _maxOffset: {x: 0.8, y: 0.5}
   _smoothTime: 0.8
+  _followSmoothTime: 0.35
 --- !u!1001 &393968948
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -31760,3 +31814,4 @@ SceneRoots:
   - {fileID: 767801609}
   - {fileID: 1969746667}
   - {fileID: 405222975}
+  - {fileID: 59112163}
