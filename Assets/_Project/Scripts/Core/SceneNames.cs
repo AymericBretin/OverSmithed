@@ -9,6 +9,9 @@ namespace OverSmithed.Core
         public const string Bootstrap = "Bootstrap";
         public const string Menu = "Menu";
         public const string Lobby = "Lobby";
+        public const string WorldMap = "WorldMap";
+
+        /// <summary>First level (the graybox shop). Later levels come with LevelDefinition (FLOW-6).</summary>
         public const string Game = "Game";
     }
 }

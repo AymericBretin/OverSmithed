@@ -8,15 +8,19 @@ using UnityEngine;
 namespace OverSmithed.Editor
 {
     /// <summary>
-    /// Test any scene in game, with players. Open the scene in the editor, press Play (it starts from Bootstrap),
-    /// host a game and join in the lobby, then use the menu "OverSmithed/Launch Edited Scene": the host loads
-    /// that scene for everyone, like the Launch button does for the Game scene.
-    /// The scene must be in the build list (Netcode can only load those) and have a PlayerSpawner.
+    /// Debug menu "OverSmithed/Go To ..." to switch scenes in Play Mode, as the host, for every player.
+    /// From the lobby it does a real launch (roster and online session locked, like the Launch button);
+    /// after that it just loads the scene (e.g. end a level and go back to the world map).
+    /// "Edited Scene" = the scene open in the editor when Play was pressed, to test any scene with players.
+    /// Scenes must be in the build list (Netcode can only load those). A level needs a PlayerSpawner.
     /// </summary>
     [InitializeOnLoad]
     internal static class TestSceneLauncher
     {
-        private const string MenuPath = "OverSmithed/Launch Edited Scene (host, in lobby)";
+        private const string MenuRoot = "OverSmithed/";
+        private const string WorldMapMenu = MenuRoot + "Go To World Map (host)";
+        private const string GameLevelMenu = MenuRoot + "Go To Level: Game (host)";
+        private const string EditedSceneMenu = MenuRoot + "Go To Edited Scene (host)";
         private const string EditedSceneKey = "OverSmithed.EditedScenePath";
 
         static TestSceneLauncher()
@@ -33,43 +37,61 @@ namespace OverSmithed.Editor
             }
         }
 
-        [MenuItem(MenuPath)]
-        private static void Launch()
+        [MenuItem(WorldMapMenu, priority = 100)]
+        private static void GoToWorldMap()
+        {
+            GoTo(SceneNames.WorldMap);
+        }
+
+        [MenuItem(GameLevelMenu, priority = 101)]
+        private static void GoToGameLevel()
+        {
+            GoTo(SceneNames.Game);
+        }
+
+        [MenuItem(EditedSceneMenu, priority = 120)]
+        private static void GoToEditedScene()
         {
             var path = SessionState.GetString(EditedSceneKey, string.Empty);
-            var sceneName = System.IO.Path.GetFileNameWithoutExtension(path);
             if (!IsInBuildList(path))
             {
                 Debug.LogWarning($"[TestSceneLauncher] '{path}' is not in the build list: add it in Build Profiles.");
                 return;
             }
+            GoTo(System.IO.Path.GetFileNameWithoutExtension(path));
+        }
+
+        [MenuItem(WorldMapMenu, true)]
+        [MenuItem(GameLevelMenu, true)]
+        [MenuItem(EditedSceneMenu, true)]
+        private static bool GoToValidate()
+        {
+            return EditorApplication.isPlaying && NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer;
+        }
+
+        private static void GoTo(string sceneName)
+        {
             var networkManager = NetworkManager.Singleton;
             if (networkManager == null || !networkManager.IsServer)
             {
-                Debug.LogWarning("[TestSceneLauncher] Only the host can launch a scene. Host a game first.");
+                Debug.LogWarning("[TestSceneLauncher] Only the host can change the scene. Host a game first.");
                 return;
             }
             var roster = SessionRoster.Instance;
-            if (roster == null || roster.Count == 0 || roster.IsLocked)
+            if (roster == null || roster.Count == 0)
             {
                 Debug.LogWarning("[TestSceneLauncher] Join with at least one player in the lobby first.");
                 return;
             }
 
-            // Same steps as SessionService.LaunchGame, with another scene.
-            roster.SetLocked(true);
-            if (!SceneFlow.LoadNetworkScene(sceneName))
+            // Still in the lobby: launch the game for real, straight into that scene.
+            var started = roster.IsLocked
+                ? SceneFlow.LoadNetworkScene(sceneName)
+                : SessionService.Instance.LaunchGame(sceneName);
+            if (started)
             {
-                roster.SetLocked(false);
-                return;
+                Debug.Log($"[TestSceneLauncher] Loading {sceneName} for every player.");
             }
-            Debug.Log($"[TestSceneLauncher] Loading {sceneName} for every player.");
-        }
-
-        [MenuItem(MenuPath, true)]
-        private static bool LaunchValidate()
-        {
-            return EditorApplication.isPlaying;
         }
 
         private static bool IsInBuildList(string path)
