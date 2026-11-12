@@ -198,8 +198,11 @@ namespace OverSmithed.Networking
             }
         }
 
-        /// <summary>Host only: closes the lobby and takes every machine to the game scene.</summary>
-        public bool LaunchGame()
+        /// <summary>
+        /// Host only: closes the lobby (nobody can join any more) and takes every machine to the world map,
+        /// or to <paramref name="firstScene"/> (the editor "Go To" menu uses it to jump to a level).
+        /// </summary>
+        public bool LaunchGame(string firstScene = SceneNames.WorldMap)
         {
             var roster = SessionRoster.Instance;
             if (!NetworkManager.Singleton.IsServer || roster == null || roster.Count == 0 || roster.IsLocked)
@@ -208,7 +211,7 @@ namespace OverSmithed.Networking
             }
 
             roster.SetLocked(true);
-            if (!SceneFlow.LoadNetworkScene(SceneNames.Game))
+            if (!SceneFlow.LoadNetworkScene(firstScene))
             {
                 roster.SetLocked(false);
                 return false;
