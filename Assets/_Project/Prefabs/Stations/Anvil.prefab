@@ -74,6 +74,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7502345703883613153}
   - component: {fileID: 8438205666649962868}
+  - component: {fileID: 4916694596440475224}
   m_Layer: 0
   m_Name: Anvil
   m_TagString: Untagged
@@ -119,6 +120,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 0.8, z: 1}
   m_Center: {x: 0, y: 0.4, z: 0}
+--- !u!114 &4916694596440475224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8819491440854927981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1999a95c247db4fb08cb5a073716415f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Interaction.Interactable
+  _area: {fileID: 0}
+  _highlightBrightness: 1.4
 --- !u!1 &9004814085232665972
 GameObject:
   m_ObjectHideFlags: 0
