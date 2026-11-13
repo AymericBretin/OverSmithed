@@ -24,6 +24,9 @@ namespace OverSmithed.Items
         private GameObject _visual;
         private int _visualItemId = ItemDefinition.NoneId;
 
+        /// <summary>The item leaves the network (destroyed, end of level). For example a counter holding it becomes empty.</summary>
+        public event System.Action<NetworkItem> Despawned;
+
         /// <summary>What this item is, on every machine. Null before spawn or if the id is unknown.</summary>
         public ItemDefinition Definition => _database != null ? _database.Get(_itemId.Value) : null;
 
@@ -82,6 +85,7 @@ namespace OverSmithed.Items
         public override void OnNetworkDespawn()
         {
             _itemId.OnValueChanged -= HandleItemIdChanged;
+            Despawned?.Invoke(this);
         }
 
         private void HandleItemIdChanged(int previous, int current)
