@@ -80,12 +80,28 @@ namespace OverSmithed.Items
 
             _itemId.OnValueChanged += HandleItemIdChanged;
             Refresh();
+            UpdateTargetable(transform.parent);
         }
 
         public override void OnNetworkDespawn()
         {
             _itemId.OnValueChanged -= HandleItemIdChanged;
             Despawned?.Invoke(this);
+        }
+
+        // Called by NGO on every machine when the item gets or loses a network parent (a player carries it).
+        public override void OnNetworkObjectParentChanged(NetworkObject parentNetworkObject)
+        {
+            UpdateTargetable(parentNetworkObject != null ? parentNetworkObject.transform : null);
+        }
+
+        // A carried item is not a target: nobody can aim at (or take) the item in someone else's hands.
+        private void UpdateTargetable(Transform parent)
+        {
+            if (TryGetComponent<Interactable>(out var interactable))
+            {
+                interactable.enabled = parent == null;
+            }
         }
 
         private void HandleItemIdChanged(int previous, int current)
