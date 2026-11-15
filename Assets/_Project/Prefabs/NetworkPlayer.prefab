@@ -265,7 +265,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.PlayerHands
   ShowTopMostFoldoutHeaderGroup: 1
-  _holdOffset: {x: 0, y: 0.85, z: 0.55}
+  _holdOffset: {x: 0, y: 0.7, z: 0.75}
   _maxReach: 2
 --- !u!1 &8257111962428553630
 GameObject:

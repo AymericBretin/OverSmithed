@@ -20,8 +20,9 @@ namespace OverSmithed.Players
         // NGO's "no object" reference (a default struct would point at id 0 instead).
         private static readonly NetworkObjectReference NoItem = new((NetworkObject)null);
 
-        [Tooltip("Where the bottom of the carried item is, from the player's feet (x right, y up, z forward).")]
-        [SerializeField] private Vector3 _holdOffset = new(0f, 0.85f, 0.55f);
+        [Tooltip("Where the bottom of the carried item is, from the player's feet (x right, y up, z forward). " +
+                 "Low and far enough forward that the characters' big heads don't hide the item from the camera.")]
+        [SerializeField] private Vector3 _holdOffset = new(0f, 0.7f, 0.75f);
         [Tooltip("The host refuses a request if the target is further than this (m, on the ground) from the player. " +
                  "Bigger than the aiming reach: the player may have moved a bit while the request travels.")]
         [SerializeField] private float _maxReach = 2f;
