@@ -67,7 +67,7 @@ namespace OverSmithed.Players
                 return;
             }
             var target = _interactor.Current;
-            // Only networked things can be sent to the host (counters, items). Crates and stations come later.
+            // Only networked things can be sent to the host (counters, crates, items). Stations come later.
             if (target != null && target.TryGetComponent<NetworkObject>(out var networkObject) && networkObject.IsSpawned)
             {
                 InteractRpc(networkObject);
@@ -87,7 +87,8 @@ namespace OverSmithed.Players
 
         /// <summary>
         /// Host only: what Interact does with <paramref name="target"/>. Empty hands: take the item on a counter,
-        /// or a free item. Full hands: put the item on an empty counter. Returns false if nothing happened.
+        /// a new item from a crate, or a free item. Full hands: put the item on an empty counter.
+        /// Returns false if nothing happened.
         /// </summary>
         public bool TryInteract(NetworkObject target)
         {
@@ -119,6 +120,27 @@ namespace OverSmithed.Players
                 }
                 Release(held);
                 return counter.TryPlace(held);
+            }
+
+            // A crate gives a new item to empty hands. Nothing can be put on a crate.
+            if (target.TryGetComponent<Crate>(out var crate))
+            {
+                if (held != null)
+                {
+                    return false;
+                }
+                // Created in the crate, then held: every machine sees it fly from the crate to the hands.
+                var newItem = crate.CreateItem();
+                if (newItem == null)
+                {
+                    return false;
+                }
+                if (Hold(newItem))
+                {
+                    return true;
+                }
+                newItem.NetworkObject.Despawn();
+                return false;
             }
 
             // A free item (on the floor later, GP-9). An item on a counter or in someone's hands is not free:

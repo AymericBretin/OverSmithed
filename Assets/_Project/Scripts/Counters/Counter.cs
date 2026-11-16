@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OverSmithed.Effects;
 using OverSmithed.Interaction;
 using OverSmithed.Items;
 using Unity.Netcode;
@@ -24,6 +25,10 @@ namespace OverSmithed.Counters
         [SerializeField] private ItemDefinition _startingItem;
         [Tooltip("Prefab used to create the starting item.")]
         [SerializeField] private NetworkItem _itemPrefab;
+        [Tooltip("Optional: squashes the counter when an item is taken from it or lands on it.")]
+        [SerializeField] private SquashBounce _bounce;
+        [Tooltip("When an item is put on the counter, the bounce waits this long (seconds): the item's flight time.")]
+        [SerializeField] private float _landBounceDelay = 0.15f;
 
         // NGO's "no object" reference (a default struct would point at id 0 instead).
         private static readonly NetworkObjectReference NoItem = new((NetworkObject)null);
@@ -186,6 +191,10 @@ namespace OverSmithed.Counters
             if (_attachedItem != null && _attachedItem.TryGetComponent<Interactable>(out var newInteractable))
             {
                 _interactable.Attach(newInteractable);
+            }
+            if (_bounce != null)
+            {
+                _bounce.Play(item != null ? _landBounceDelay : 0f);
             }
             ItemChanged?.Invoke(this);
         }

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2053585898880168058}
   - component: {fileID: 2468722224179417304}
   - component: {fileID: 6118373143232818052}
+  - component: {fileID: 6342975421366362639}
   m_Layer: 0
   m_Name: Counter_Graybox
   m_TagString: Untagged
@@ -115,6 +116,23 @@ MonoBehaviour:
   _itemPoint: {fileID: 4705376715164527127}
   _startingItem: {fileID: 0}
   _itemPrefab: {fileID: 2009488145691647170, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+  _bounce: {fileID: 6342975421366362639}
+  _landBounceDelay: 0.15
+--- !u!114 &6342975421366362639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2868178400638795737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 384eb9bab4b6542329fd8fe323d4d1fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Effects.SquashBounce
+  _target: {fileID: 778312355283390025}
+  _amount: 0.1
+  _duration: 0.25
 --- !u!1 &4221367159418899914
 GameObject:
   m_ObjectHideFlags: 0
