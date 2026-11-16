@@ -33,12 +33,12 @@ namespace OverSmithed.Networking
             string refusal = null;
             if (roster != null && roster.IsLocked)
             {
-                refusal = "La partie a déjà commencé.";
+                refusal = "The game has already started.";
             }
             else if ((roster != null && roster.Count >= NetworkConstants.MaxPlayers)
                      || networkManager.ConnectedClientsIds.Count >= NetworkConstants.MaxConnections)
             {
-                refusal = "La partie est pleine.";
+                refusal = "The game is full.";
             }
 
             response.Approved = refusal == null;

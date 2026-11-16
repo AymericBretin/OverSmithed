@@ -122,11 +122,11 @@ namespace OverSmithed.Networking
             string refusal = null;
             if (_isLocked.Value)
             {
-                refusal = "La partie a déjà commencé.";
+                refusal = "The game has already started.";
             }
             else if (_entries.Count >= NetworkConstants.MaxPlayers)
             {
-                refusal = $"La partie est pleine ({NetworkConstants.MaxPlayers} joueurs).";
+                refusal = $"The game is full ({NetworkConstants.MaxPlayers} players).";
             }
 
             if (refusal != null)
