@@ -24,9 +24,9 @@ namespace OverSmithed.Networking
     /// </summary>
     public class SessionService : MonoBehaviour
     {
-        private const string HostClosedMessage = "L'hôte a fermé la partie.";
-        private const string ConnectionLostMessage = "La connexion avec l'hôte a été perdue.";
-        private const string NetworkStoppedMessage = "Le réseau a été interrompu.";
+        private const string HostClosedMessage = "The host closed the game.";
+        private const string ConnectionLostMessage = "The connection to the host was lost.";
+        private const string NetworkStoppedMessage = "The network stopped.";
 
         public static SessionService Instance { get; private set; }
 
@@ -128,7 +128,7 @@ namespace OverSmithed.Networking
         {
             if (Mode != SessionMode.None)
             {
-                return "Une partie est déjà en cours.";
+                return "A game is already running.";
             }
 
             PrepareStart();
@@ -153,7 +153,7 @@ namespace OverSmithed.Networking
             {
                 Debug.LogException(exception);
                 await AbortOnlineAsync();
-                return "Impossible de créer la partie en ligne. Vérifie ta connexion.";
+                return "Could not create the online game. Check your connection.";
             }
         }
 
@@ -162,12 +162,12 @@ namespace OverSmithed.Networking
         {
             if (Mode != SessionMode.None)
             {
-                return "Une partie est déjà en cours.";
+                return "A game is already running.";
             }
             code = code?.Trim().ToUpperInvariant();
             if (string.IsNullOrEmpty(code))
             {
-                return "Entre le code de la partie.";
+                return "Enter the game code.";
             }
 
             PrepareStart();
@@ -193,8 +193,8 @@ namespace OverSmithed.Networking
                 }
                 // Full and locked sessions both surface as Unknown: the service does not keep the reason.
                 return exception is SessionException { Error: SessionError.SessionNotFound }
-                    ? "Aucune partie avec ce code."
-                    : "Impossible de rejoindre : partie pleine, déjà lancée ou code invalide.";
+                    ? "No game found with this code."
+                    : "Could not join: the game is full, already started, or the code is wrong.";
             }
         }
 
