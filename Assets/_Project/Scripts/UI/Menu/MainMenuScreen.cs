@@ -35,8 +35,8 @@ namespace OverSmithed.UI
         [SerializeField] private Button _joinBackButton;
 
         [Header("Settings and credits panels")]
-        [SerializeField] private GameObject _settingsPanel;
-        [SerializeField] private Button _settingsBackButton;
+        [Tooltip("The SettingsPanel prefab (also used by the pause menu).")]
+        [SerializeField] private SettingsScreen _settingsScreen;
         [SerializeField] private GameObject _creditsPanel;
         [SerializeField] private Button _creditsBackButton;
 
@@ -51,18 +51,19 @@ namespace OverSmithed.UI
             _playLocalButton.onClick.AddListener(PlayLocal);
             _hostButton.onClick.AddListener(HostOnline);
             _joinButton.onClick.AddListener(() => OpenPanel(_joinPanel, _joinButton, _codeField.gameObject));
-            _settingsButton.onClick.AddListener(() => OpenPanel(_settingsPanel, _settingsButton, _settingsBackButton.gameObject));
+            _settingsButton.onClick.AddListener(() =>
+                OpenPanel(_settingsScreen.gameObject, _settingsButton, _settingsScreen.FirstSelectable.gameObject));
             _creditsButton.onClick.AddListener(() => OpenPanel(_creditsPanel, _creditsButton, _creditsBackButton.gameObject));
             _quitButton.onClick.AddListener(Quit);
 
             _joinConfirmButton.onClick.AddListener(JoinWithCode);
             _codeField.onSubmit.AddListener(_ => JoinWithCode());
             _joinBackButton.onClick.AddListener(ClosePanel);
-            _settingsBackButton.onClick.AddListener(ClosePanel);
+            _settingsScreen.BackButton.onClick.AddListener(ClosePanel);
             _creditsBackButton.onClick.AddListener(ClosePanel);
 
             _joinPanel.SetActive(false);
-            _settingsPanel.SetActive(false);
+            _settingsScreen.gameObject.SetActive(false);
             _creditsPanel.SetActive(false);
             _keepSelection.DefaultSelection = _playLocalButton.gameObject;
         }
@@ -90,7 +91,8 @@ namespace OverSmithed.UI
         private void Update()
         {
             // Back: Escape / gamepad East (the UI "Cancel" action), while a panel is open and nothing is running.
-            if (_openPanel != null && !_busy && CancelPressed())
+            // An open dropdown list takes the Cancel for itself (it closes the list, not the panel).
+            if (_openPanel != null && !_busy && !_settingsScreen.IsDropdownOpen && CancelPressed())
             {
                 ClosePanel();
             }
