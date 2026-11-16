@@ -23,6 +23,8 @@ namespace OverSmithed.WorldMap
         [SerializeField] private Button _leaveButton;
 
         private bool _isHost;
+        private TMP_Text _leaveLabel;
+        private readonly OverSmithed.UI.VerticalMoveReader _vertical = new();
         private bool _levelRequested;
 
         private void Start()
@@ -34,10 +36,10 @@ namespace OverSmithed.WorldMap
                 ? "Press Interact to start the level."
                 : "Waiting for the host to start the level...";
 
-            var leaveLabel = _leaveButton.GetComponentInChildren<TMP_Text>();
-            if (leaveLabel != null)
+            _leaveLabel = _leaveButton.GetComponentInChildren<TMP_Text>();
+            if (_leaveLabel != null)
             {
-                leaveLabel.text = _isHost ? "Close game" : "Leave";
+                _leaveLabel.text = _isHost ? "Close game" : "Leave";
             }
             _leaveButton.onClick.AddListener(OnLeaveClicked);
         }
@@ -49,7 +51,32 @@ namespace OverSmithed.WorldMap
 
         private void Update()
         {
-            if (!_isHost || _levelRequested || !AnyLocalPlayerPressedInteract())
+            // Escape leaves (keyboard habit). With a gamepad: down selects Leave, up goes back; Interact (A / Space /
+            // Enter) then presses Leave instead of starting the level.
+            if (_leaveButton.interactable && UnityEngine.InputSystem.Keyboard.current != null &&
+                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                OnLeaveClicked();
+                return;
+            }
+            var eventSystem = UnityEngine.EventSystems.EventSystem.current;
+            var leaveSelected = false;
+            if (eventSystem != null)
+            {
+                var step = _vertical.Read();
+                var leave = _leaveButton.gameObject;
+                if (step < 0 && eventSystem.currentSelectedGameObject == null)
+                {
+                    eventSystem.SetSelectedGameObject(leave);
+                }
+                else if (step > 0 && eventSystem.currentSelectedGameObject == leave)
+                {
+                    eventSystem.SetSelectedGameObject(null);
+                }
+                leaveSelected = eventSystem.currentSelectedGameObject == leave;
+            }
+
+            if (leaveSelected || !_isHost || _levelRequested || !AnyLocalPlayerPressedInteract())
             {
                 return;
             }

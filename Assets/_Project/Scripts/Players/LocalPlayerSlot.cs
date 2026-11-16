@@ -65,6 +65,32 @@ namespace OverSmithed.Players
             name = $"LocalPlayerSlot {LocalIndex} ({ControlScheme})";
         }
 
+        /// <summary>
+        /// Online: the player now uses another device. The press that made the switch must not also act (pressing B
+        /// on a new gamepad must not make the player leave): the actions are off until the next frame, and a button
+        /// still held then does not count as a new press.
+        /// </summary>
+        public void SwitchDevice(string scheme, InputDevice device)
+        {
+            Input.SwitchCurrentControlScheme(scheme, device);
+            Input.DeactivateInput();
+            if (_reactivate != null)
+            {
+                StopCoroutine(_reactivate);
+            }
+            _reactivate = StartCoroutine(ReactivateNextFrame());
+            name = $"LocalPlayerSlot {LocalIndex} ({ControlScheme})";
+        }
+
+        private System.Collections.IEnumerator ReactivateNextFrame()
+        {
+            yield return null;
+            Input.ActivateInput();
+            _reactivate = null;
+        }
+
+        private Coroutine _reactivate;
+
         public void MarkJoined(byte playerNumber)
         {
             State = SlotState.Joined;
