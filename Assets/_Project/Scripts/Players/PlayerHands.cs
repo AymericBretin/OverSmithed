@@ -9,7 +9,7 @@ namespace OverSmithed.Players
 {
     /// <summary>
     /// What a player carries (one item at most), and the Interact button: pick up / put down / drop on the floor
-    /// (when nothing is in front).
+    /// (when nothing is in front). The Throw button throws the carried item forward.
     /// The owner machine only asks (one RPC per press, with what <see cref="PlayerInteractor"/> aims at);
     /// the host checks the request and moves the item. Requests are handled one by one on the host, so two
     /// players can't take the same item, and the item is never copied: the same networked item changes place.
@@ -33,6 +33,13 @@ namespace OverSmithed.Players
         [SerializeField] private float _dropForwardSpeed = 0.5f;
         [Tooltip("Drop: what the item must not start inside (walls, counters). Not players or items.")]
         [SerializeField] private LayerMask _dropBlockers = 1;
+        [Header("Throw")]
+        [Tooltip("Throw strength: speed (m/s) forward when the item leaves the hands.")]
+        [SerializeField] private float _throwForwardSpeed = 9f;
+        [Tooltip("Speed (m/s) upward when the item leaves the hands: a higher arc, a longer throw.")]
+        [SerializeField] private float _throwUpSpeed = 2.5f;
+        [Tooltip("Part of the player's speed the thrown item keeps (running throws go further).")]
+        [SerializeField] private float _throwMomentum = 0.5f;
 
         private readonly NetworkVariable<NetworkObjectReference> _heldItem = new(NoItem);
 
@@ -41,7 +48,11 @@ namespace OverSmithed.Players
         private PlayerMovement _movement;
         private LocalPlayerSlot _slot;
         private InputAction _interactAction;
+        private InputAction _throwAction;
         private NetworkItem _watchedItem;
+
+        /// <summary>Every machine: this player just threw its item (for the arm swing). Sent by the host.</summary>
+        public event System.Action Thrown;
 
         /// <summary>The carried item, or null. Valid on every machine.</summary>
         public NetworkItem HeldItem => _heldItem.Value.TryGet(out var networkObject)
@@ -73,8 +84,16 @@ namespace OverSmithed.Players
 
         private void Update()
         {
-            if (!IsSpawned || !IsOwner || !_player.CanMove || !TryGetInteractAction(out var interact)
-                || !interact.WasPressedThisFrame())
+            if (!IsSpawned || !IsOwner || !_player.CanMove || !TryGetActions(out var interact, out var throwAction))
+            {
+                return;
+            }
+            if (throwAction != null && throwAction.WasPressedThisFrame() && IsHolding)
+            {
+                ThrowRpc(_movement != null ? _movement.Velocity : Vector3.zero);
+                return;
+            }
+            if (!interact.WasPressedThisFrame())
             {
                 return;
             }
@@ -107,6 +126,44 @@ namespace OverSmithed.Players
         /// </summary>
         public bool TryDrop(Vector3 playerVelocity = default)
         {
+            return ReleaseInFront(playerVelocity * _dropMomentum + transform.forward * _dropForwardSpeed);
+        }
+
+        // Sent by the owner machine, run on the host.
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
+        private void ThrowRpc(Vector3 playerVelocity)
+        {
+            // Never trust a speed sent by a client blindly: at most the top speed.
+            var maxSpeed = _movement != null ? _movement.MaxSpeed : 0f;
+            TryThrow(Vector3.ClampMagnitude(new Vector3(playerVelocity.x, 0f, playerVelocity.z), maxSpeed));
+        }
+
+        /// <summary>
+        /// Host only: the carried item flies forward on an arc (simulated by the host, synced to every machine),
+        /// lands and can be picked up again. Returns false if the hands are empty.
+        /// </summary>
+        public bool TryThrow(Vector3 playerVelocity = default)
+        {
+            var velocity = transform.forward * _throwForwardSpeed + Vector3.up * _throwUpSpeed
+                           + playerVelocity * _throwMomentum;
+            if (!ReleaseInFront(velocity))
+            {
+                return false;
+            }
+            ThrownRpc();
+            return true;
+        }
+
+        // Sent by the host to every machine (host included): a one-time event, only for looks (arm swing).
+        [Rpc(SendTo.ClientsAndHost)]
+        private void ThrownRpc()
+        {
+            Thrown?.Invoke();
+        }
+
+        // Host: the carried item leaves the hands in front of the player (never inside a wall) and starts moving.
+        private bool ReleaseInFront(Vector3 velocity)
+        {
             var item = IsServer && IsSpawned ? HeldItem : null;
             if (item == null)
             {
@@ -126,7 +183,7 @@ namespace OverSmithed.Players
             var dropRotation = item.transform.rotation;
             Release(item);
             item.transform.SetPositionAndRotation(dropPosition, dropRotation);
-            item.StartPhysics(playerVelocity * _dropMomentum + forward * _dropForwardSpeed);
+            item.StartPhysics(velocity);
             return true;
         }
 
@@ -272,14 +329,16 @@ namespace OverSmithed.Players
             }
         }
 
-        private bool TryGetInteractAction(out InputAction interactAction)
+        private bool TryGetActions(out InputAction interactAction, out InputAction throwAction)
         {
             if (_slot != _player.LocalSlot)
             {
                 _slot = _player.LocalSlot;
                 _interactAction = _slot != null ? _slot.Input.actions.FindAction("Interact") : null;
+                _throwAction = _slot != null ? _slot.Input.actions.FindAction("Throw") : null;
             }
             interactAction = _interactAction;
+            throwAction = _throwAction;
             return interactAction != null;
         }
 

@@ -12,7 +12,8 @@ namespace OverSmithed.Players
     /// to 1 while the player holds an item (<see cref="PlayerHands.HeldItem"/>, already known on every machine).
     /// The carried item's visual also follows the hands up and down (they move with the body when walking,
     /// running, breathing), through <see cref="ItemVisualMotion.HandsLift"/>: the item itself stays where the host
-    /// put it. Taking or putting down an item adds a short "reach" of the arms (forward and down, then back).
+    /// put it. Taking or putting down an item adds a short "reach" of the arms (down, then back); throwing one
+    /// a quick swing up (<see cref="PlayerHands.Thrown"/>).
     /// </summary>
     [RequireComponent(typeof(NetworkPlayer), typeof(PlayerMovement), typeof(PlayerHands))]
     public class PlayerAnimator : MonoBehaviour
@@ -40,6 +41,10 @@ namespace OverSmithed.Players
         [SerializeField] private float _reachAngle = 35f;
         [Tooltip("Time (seconds) of the reach. When putting down, the arms stay up this long, then go down.")]
         [SerializeField] private float _reachTime = 0.25f;
+        [Tooltip("How far (degrees) the arms swing up when throwing an item.")]
+        [SerializeField] private float _throwAngle = 55f;
+        [Tooltip("Time (seconds) of the throw swing. The arms stay forward this long, then go down.")]
+        [SerializeField] private float _throwTime = 0.3f;
 
         private NetworkPlayer _player;
         private PlayerMovement _movement;
@@ -56,7 +61,12 @@ namespace OverSmithed.Players
 
         // The item this machine saw in the hands last frame: a change starts a reach.
         private NetworkItem _lastHeldItem;
-        private float _reachElapsed = float.MaxValue;
+        // The arm gesture playing now: a reach (down) when taking / putting down, a swing (up) when throwing.
+        private float _gestureElapsed = float.MaxValue;
+        private float _gestureTime;
+        private float _gestureAngle;
+        private bool _gestureEaseOut;
+        private float _lastThrowTime = float.MinValue;
 
         // The carried item whose visual follows the hands.
         private ItemVisualMotion _followedMotion;
@@ -71,11 +81,28 @@ namespace OverSmithed.Players
         private void OnEnable()
         {
             _lastPosition = transform.position;
+            _hands.Thrown += HandleThrown;
         }
 
         private void OnDisable()
         {
+            _hands.Thrown -= HandleThrown;
             StopFollowing();
+        }
+
+        // Every machine hears it (host RPC): the arms swing up instead of the usual reach down.
+        private void HandleThrown()
+        {
+            _lastThrowTime = Time.time;
+            StartGesture(-_throwAngle, _throwTime, easeOut: true);
+        }
+
+        private void StartGesture(float angle, float time, bool easeOut)
+        {
+            _gestureAngle = angle;
+            _gestureTime = time;
+            _gestureEaseOut = easeOut;
+            _gestureElapsed = 0f;
         }
 
         // LateUpdate: after PlayerMovement (owner) and the NetworkTransform interpolation (others) moved the avatar,
@@ -132,38 +159,53 @@ namespace OverSmithed.Players
             if (heldItem != _lastHeldItem)
             {
                 // Taken or put down (seen the same way on every machine): reach, unless the skin just changed.
-                _reachElapsed = newAnimator ? float.MaxValue : 0f;
+                // A thrown item already has its swing (the throw message may come just before or after this).
+                var justThrown = heldItem == null && Time.time - _lastThrowTime < _throwTime;
+                if (newAnimator)
+                {
+                    _gestureElapsed = float.MaxValue;
+                }
+                else if (!justThrown)
+                {
+                    StartGesture(_reachAngle, _reachTime, easeOut: false);
+                }
                 _lastHeldItem = heldItem;
             }
-            var reaching = _reachElapsed < _reachTime;
+            var gesturing = _gestureElapsed < _gestureTime;
 
             // The weight this frame's pose was made with (a new weight is used from the next frame).
             var shownWeight = animator.GetLayerWeight(_carryLayer);
-            // After putting down, the arms stay up during the reach, then go down.
-            var target = heldItem != null || reaching ? 1f : 0f;
+            // After putting down or throwing, the arms stay up during the gesture, then go down.
+            var target = heldItem != null || gesturing ? 1f : 0f;
             // A new skin visual starts directly in the right pose (no arms going up after a skin change).
             var weight = newAnimator || _carryBlendTime <= 0f
                 ? target
                 : Mathf.MoveTowards(shownWeight, target, deltaTime / _carryBlendTime);
             animator.SetLayerWeight(_carryLayer, weight);
 
-            if (reaching)
+            if (gesturing)
             {
-                Reach(Mathf.Sin(Mathf.PI * _reachElapsed / _reachTime) * shownWeight);
-                _reachElapsed += deltaTime;
+                var t = Mathf.Clamp01(_gestureElapsed / _gestureTime);
+                // The throw goes up fast and comes back slower.
+                if (_gestureEaseOut)
+                {
+                    t = 1f - (1f - t) * (1f - t);
+                }
+                TurnArms(_gestureAngle * Mathf.Sin(Mathf.PI * t) * shownWeight);
+                _gestureElapsed += deltaTime;
             }
             FollowHands(heldItem, shownWeight);
         }
 
-        // Turns both upper arms down around the shoulders, on top of the animation (0 = no reach, 1 = full).
-        // Scaled by the carry weight: it only makes sense with the arms forward.
-        private void Reach(float amount)
+        // Turns both upper arms around the shoulders, on top of the animation (degrees: + = down, - = up).
+        // Scaled by the carry weight by the caller: it only makes sense with the arms forward.
+        private void TurnArms(float angle)
         {
             if (_leftUpperArm == null || _rightUpperArm == null)
             {
                 return;
             }
-            var turn = Quaternion.AngleAxis(_reachAngle * amount, transform.right);
+            var turn = Quaternion.AngleAxis(angle, transform.right);
             _leftUpperArm.rotation = turn * _leftUpperArm.rotation;
             _rightUpperArm.rotation = turn * _rightUpperArm.rotation;
         }
