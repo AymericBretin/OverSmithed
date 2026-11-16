@@ -87,6 +87,12 @@ namespace OverSmithed.Items
             _itemId.OnValueChanged += HandleItemIdChanged;
             Refresh();
             UpdateTargetable(transform.parent);
+
+            // The item is at its real place now: its visual must not fly in from where it was instantiated.
+            if (TryGetComponent<ItemVisualMotion>(out var motion))
+            {
+                motion.Snap();
+            }
         }
 
         public override void OnNetworkDespawn()

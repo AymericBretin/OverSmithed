@@ -11,7 +11,8 @@ namespace OverSmithed.Players
     /// The carry pose is the "Carry" layer of the controller (arms only, legs keep running): its weight goes
     /// to 1 while the player holds an item (<see cref="PlayerHands.HeldItem"/>, already known on every machine).
     /// The carried item's visual also follows the hands up and down (they move with the body when walking,
-    /// running, breathing). Only the visual child moves, on each machine: the item itself stays where the host put it.
+    /// running, breathing), through <see cref="ItemVisualMotion.HandsLift"/>: the item itself stays where the host
+    /// put it. Taking or putting down an item adds a short "reach" of the arms (forward and down, then back).
     /// </summary>
     [RequireComponent(typeof(NetworkPlayer), typeof(PlayerMovement), typeof(PlayerHands))]
     public class PlayerAnimator : MonoBehaviour
@@ -20,6 +21,8 @@ namespace OverSmithed.Players
         private const string CarryLayerName = "Carry";
         private const string LeftHandPath = "Rig_Medium/root/hips/spine/chest/upperarm.l/lowerarm.l/wrist.l/hand.l";
         private const string RightHandPath = "Rig_Medium/root/hips/spine/chest/upperarm.r/lowerarm.r/wrist.r/hand.r";
+        private const string LeftUpperArmPath = "Rig_Medium/root/hips/spine/chest/upperarm.l";
+        private const string RightUpperArmPath = "Rig_Medium/root/hips/spine/chest/upperarm.r";
 
         [Tooltip("Time (seconds) for the Speed parameter to catch up: smooths the change between idle and run.")]
         [SerializeField] private float _dampTime = 0.1f;
@@ -33,6 +36,10 @@ namespace OverSmithed.Players
                  "(average over the idle animation). At this height the item is at its normal place. " +
                  "Measure it again if the carry pose changes.")]
         [SerializeField] private float _handsRestHeight = 0.8f;
+        [Tooltip("How far (degrees) the arms reach down when taking or putting down an item.")]
+        [SerializeField] private float _reachAngle = 35f;
+        [Tooltip("Time (seconds) of the reach. When putting down, the arms stay up this long, then go down.")]
+        [SerializeField] private float _reachTime = 0.25f;
 
         private NetworkPlayer _player;
         private PlayerMovement _movement;
@@ -44,10 +51,15 @@ namespace OverSmithed.Players
         private int _carryLayer = -1;
         private Transform _leftHand;
         private Transform _rightHand;
+        private Transform _leftUpperArm;
+        private Transform _rightUpperArm;
 
-        // The visual child of the carried item that this machine moves, and where it was before.
-        private Transform _followedVisual;
-        private Vector3 _followedVisualRest;
+        // The item this machine saw in the hands last frame: a change starts a reach.
+        private NetworkItem _lastHeldItem;
+        private float _reachElapsed = float.MaxValue;
+
+        // The carried item whose visual follows the hands.
+        private ItemVisualMotion _followedMotion;
 
         private void Awake()
         {
@@ -106,6 +118,8 @@ namespace OverSmithed.Players
                 _carryLayer = animator.GetLayerIndex(CarryLayerName);
                 _leftHand = animator.transform.Find(LeftHandPath);
                 _rightHand = animator.transform.Find(RightHandPath);
+                _leftUpperArm = animator.transform.Find(LeftUpperArmPath);
+                _rightUpperArm = animator.transform.Find(RightUpperArmPath);
             }
             if (_carryLayer < 0)
             {
@@ -115,49 +129,73 @@ namespace OverSmithed.Players
 
             // IsSpawned first: the held item is a network reference, only valid while the player is spawned.
             var heldItem = _hands.IsSpawned ? _hands.HeldItem : null;
-            var target = heldItem != null ? 1f : 0f;
+            if (heldItem != _lastHeldItem)
+            {
+                // Taken or put down (seen the same way on every machine): reach, unless the skin just changed.
+                _reachElapsed = newAnimator ? float.MaxValue : 0f;
+                _lastHeldItem = heldItem;
+            }
+            var reaching = _reachElapsed < _reachTime;
+
+            // The weight this frame's pose was made with (a new weight is used from the next frame).
+            var shownWeight = animator.GetLayerWeight(_carryLayer);
+            // After putting down, the arms stay up during the reach, then go down.
+            var target = heldItem != null || reaching ? 1f : 0f;
             // A new skin visual starts directly in the right pose (no arms going up after a skin change).
             var weight = newAnimator || _carryBlendTime <= 0f
                 ? target
-                : Mathf.MoveTowards(animator.GetLayerWeight(_carryLayer), target, deltaTime / _carryBlendTime);
+                : Mathf.MoveTowards(shownWeight, target, deltaTime / _carryBlendTime);
             animator.SetLayerWeight(_carryLayer, weight);
 
-            FollowHands(heldItem, weight);
+            if (reaching)
+            {
+                Reach(Mathf.Sin(Mathf.PI * _reachElapsed / _reachTime) * shownWeight);
+                _reachElapsed += deltaTime;
+            }
+            FollowHands(heldItem, shownWeight);
         }
 
-        // Moves the carried item's visual up and down with the hands. The weight makes it start and stop softly
-        // while the arms go up.
+        // Turns both upper arms down around the shoulders, on top of the animation (0 = no reach, 1 = full).
+        // Scaled by the carry weight: it only makes sense with the arms forward.
+        private void Reach(float amount)
+        {
+            if (_leftUpperArm == null || _rightUpperArm == null)
+            {
+                return;
+            }
+            var turn = Quaternion.AngleAxis(_reachAngle * amount, transform.right);
+            _leftUpperArm.rotation = turn * _leftUpperArm.rotation;
+            _rightUpperArm.rotation = turn * _rightUpperArm.rotation;
+        }
+
+        // Moves the carried item's visual up and down with the hands (after the reach: the item dips with them).
+        // The weight makes it start and stop softly while the arms go up.
         private void FollowHands(NetworkItem heldItem, float carryWeight)
         {
-            var visual = heldItem != null ? heldItem.VisualRoot : null;
-            if (visual != _followedVisual)
+            var motion = heldItem != null ? heldItem.GetComponent<ItemVisualMotion>() : null;
+            if (motion != _followedMotion)
             {
                 StopFollowing();
-                if (visual != null)
-                {
-                    _followedVisual = visual;
-                    _followedVisualRest = visual.localPosition;
-                }
+                _followedMotion = motion;
             }
-            if (_followedVisual == null || _leftHand == null || _rightHand == null)
+            if (_followedMotion == null || _leftHand == null || _rightHand == null)
             {
                 return;
             }
 
             var hands = transform.InverseTransformPoint((_leftHand.position + _rightHand.position) * 0.5f);
             var lift = (hands.y - _handsRestHeight) * _itemFollow * carryWeight;
-            var worldLift = transform.TransformVector(0f, lift, 0f);
-            _followedVisual.localPosition = _followedVisualRest + _followedVisual.parent.InverseTransformVector(worldLift);
+            _followedMotion.HandsLift = transform.TransformVector(0f, lift, 0f).y;
         }
 
-        // The item left the hands (or this player is gone): its visual goes back to its normal place.
+        // The item left the hands (or this player is gone): its visual goes back to its normal height.
         private void StopFollowing()
         {
-            if (_followedVisual != null)
+            if (_followedMotion != null)
             {
-                _followedVisual.localPosition = _followedVisualRest;
+                _followedMotion.HandsLift = 0f;
             }
-            _followedVisual = null;
+            _followedMotion = null;
         }
     }
 }
