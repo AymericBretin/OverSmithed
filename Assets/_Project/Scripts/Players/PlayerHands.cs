@@ -8,7 +8,8 @@ using UnityEngine.InputSystem;
 namespace OverSmithed.Players
 {
     /// <summary>
-    /// What a player carries (one item at most), and the Interact button: pick up / put down.
+    /// What a player carries (one item at most), and the Interact button: pick up / put down / drop on the floor
+    /// (when nothing is in front).
     /// The owner machine only asks (one RPC per press, with what <see cref="PlayerInteractor"/> aims at);
     /// the host checks the request and moves the item. Requests are handled one by one on the host, so two
     /// players can't take the same item, and the item is never copied: the same networked item changes place.
@@ -26,11 +27,18 @@ namespace OverSmithed.Players
         [Tooltip("The host refuses a request if the target is further than this (m, on the ground) from the player. " +
                  "Bigger than the aiming reach: the player may have moved a bit while the request travels.")]
         [SerializeField] private float _maxReach = 2f;
+        [Tooltip("Drop: part of the player's speed the item keeps (0 = it falls straight down, 1 = full momentum).")]
+        [SerializeField] private float _dropMomentum = 0.6f;
+        [Tooltip("Drop: extra speed (m/s) forward, so the item slides a little away from the player.")]
+        [SerializeField] private float _dropForwardSpeed = 0.5f;
+        [Tooltip("Drop: what the item must not start inside (walls, counters). Not players or items.")]
+        [SerializeField] private LayerMask _dropBlockers = 1;
 
         private readonly NetworkVariable<NetworkObjectReference> _heldItem = new(NoItem);
 
         private NetworkPlayer _player;
         private PlayerInteractor _interactor;
+        private PlayerMovement _movement;
         private LocalPlayerSlot _slot;
         private InputAction _interactAction;
         private NetworkItem _watchedItem;
@@ -45,16 +53,20 @@ namespace OverSmithed.Players
         {
             _player = GetComponent<NetworkPlayer>();
             _interactor = GetComponent<PlayerInteractor>();
+            _movement = GetComponent<PlayerMovement>();
         }
 
         public override void OnNetworkDespawn()
         {
-            // Host: a player who leaves while carrying puts the item on the floor, so it is not lost with them.
+            // Host: a player who leaves while carrying drops the item, so it is not lost with them.
             var item = HeldItem;
             if (IsServer && item != null && item.IsSpawned && !NetworkManager.ShutdownInProgress)
             {
+                // While this player despawns, NGO has already taken the item off it, keeping its local position
+                // as a world position (the hold offset near the scene origin): put it back at the hold point.
                 Release(item);
-                item.transform.position = FloorUnder(transform.position);
+                item.transform.SetPositionAndRotation(transform.TransformPoint(_holdOffset), transform.rotation);
+                item.StartPhysics(Vector3.zero);
             }
             Watch(null);
         }
@@ -72,6 +84,50 @@ namespace OverSmithed.Players
             {
                 InteractRpc(networkObject);
             }
+            // Nothing in front and something in the hands: drop it on the floor.
+            else if (target == null && IsHolding)
+            {
+                // The owner knows how fast it really moves (the host only sees it a bit late).
+                DropRpc(_movement != null ? _movement.Velocity : Vector3.zero);
+            }
+        }
+
+        // Sent by the owner machine, run on the host.
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
+        private void DropRpc(Vector3 playerVelocity)
+        {
+            // Never trust a speed sent by a client blindly: at most the top speed.
+            var maxSpeed = _movement != null ? _movement.MaxSpeed : 0f;
+            TryDrop(Vector3.ClampMagnitude(new Vector3(playerVelocity.x, 0f, playerVelocity.z), maxSpeed));
+        }
+
+        /// <summary>
+        /// Host only: the carried item falls on the floor in front of the player and slides a little (it keeps
+        /// part of <paramref name="playerVelocity"/>). Returns false if the hands are empty.
+        /// </summary>
+        public bool TryDrop(Vector3 playerVelocity = default)
+        {
+            var item = IsServer && IsSpawned ? HeldItem : null;
+            if (item == null)
+            {
+                return false;
+            }
+
+            // Facing a wall: the item starts against it, not inside it.
+            var forward = transform.forward;
+            var start = transform.position + Vector3.up * _holdOffset.y;
+            var dropPosition = item.transform.position;
+            if (Physics.SphereCast(start + Vector3.up * 0.15f, 0.15f, forward, out var hit, _holdOffset.z,
+                    _dropBlockers, QueryTriggerInteraction.Ignore))
+            {
+                dropPosition = start + forward * Mathf.Max(0f, hit.distance - 0.1f);
+            }
+
+            var dropRotation = item.transform.rotation;
+            Release(item);
+            item.transform.SetPositionAndRotation(dropPosition, dropRotation);
+            item.StartPhysics(playerVelocity * _dropMomentum + forward * _dropForwardSpeed);
+            return true;
         }
 
         // Sent by the owner machine, run on the host.
@@ -143,7 +199,7 @@ namespace OverSmithed.Players
                 return false;
             }
 
-            // A free item (on the floor later, GP-9). An item on a counter or in someone's hands is not free:
+            // A free item (on the floor). An item on a counter or in someone's hands is not free:
             // the host's own Interactable knows it (attached to a counter, or disabled while carried).
             if (held == null && target.TryGetComponent<NetworkItem>(out var freeItem)
                 && freeItem.TryGetComponent<Interactable>(out var interactable)
@@ -167,8 +223,15 @@ namespace OverSmithed.Players
         // Host: the item becomes a network child of the player, in front of them.
         private bool Hold(NetworkItem item)
         {
+            // A free item stops sliding before it goes in the hands.
+            var wasFree = item.HasPhysics;
+            item.StopPhysics();
             if (!item.NetworkObject.TrySetParent(NetworkObject, worldPositionStays: false))
             {
+                if (wasFree)
+                {
+                    item.StartPhysics(Vector3.zero);
+                }
                 return false;
             }
             item.transform.SetLocalPositionAndRotation(_holdOffset, Quaternion.identity);
@@ -207,14 +270,6 @@ namespace OverSmithed.Players
                 Watch(null);
                 _heldItem.Value = NoItem;
             }
-        }
-
-        private static Vector3 FloorUnder(Vector3 position)
-        {
-            return Physics.Raycast(position + Vector3.up * 0.5f, Vector3.down, out var hit, 5f,
-                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)
-                ? hit.point
-                : position;
         }
 
         private bool TryGetInteractAction(out InputAction interactAction)

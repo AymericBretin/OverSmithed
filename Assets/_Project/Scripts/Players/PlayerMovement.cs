@@ -25,6 +25,12 @@ namespace OverSmithed.Players
         /// <summary>Top speed in meters per second (stick or keys pushed all the way).</summary>
         public float MaxSpeed => _speed;
 
+        /// <summary>
+        /// Owner machine only: how fast this player moves on the ground (m/s), from the last move. Zero elsewhere.
+        /// For example a dropped item keeps some of it.
+        /// </summary>
+        public Vector3 Velocity { get; private set; }
+
         private void Awake()
         {
             _player = GetComponent<NetworkPlayer>();
@@ -35,6 +41,7 @@ namespace OverSmithed.Players
         {
             if (!IsSpawned || !IsOwner || !_player.CanMove || !TryGetMoveAction(out var moveAction))
             {
+                Velocity = Vector3.zero;
                 return;
             }
 
@@ -48,6 +55,8 @@ namespace OverSmithed.Players
             target.x = Mathf.Clamp(target.x, -_arenaHalfSize, _arenaHalfSize);
             target.z = Mathf.Clamp(target.z, -_arenaHalfSize, _arenaHalfSize);
             _controller.Move(target - position);
+            var velocity = _controller.velocity;
+            Velocity = new Vector3(velocity.x, 0f, velocity.z);
 
             if (direction.sqrMagnitude > 0.01f)
             {
