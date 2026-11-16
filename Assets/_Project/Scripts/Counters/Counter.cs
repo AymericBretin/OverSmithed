@@ -104,6 +104,7 @@ namespace OverSmithed.Counters
             }
 
             var point = ItemPoint;
+            item.StopPhysics();
             item.transform.SetPositionAndRotation(point.position, point.rotation);
             Watch(item);
             _item.Value = item.NetworkObject;

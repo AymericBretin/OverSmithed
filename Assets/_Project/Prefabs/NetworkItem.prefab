@@ -14,7 +14,10 @@ GameObject:
   - component: {fileID: 2009488145691647170}
   - component: {fileID: 8497730101452954563}
   - component: {fileID: 5694565143568710067}
-  m_Layer: 0
+  - component: {fileID: 4318505122420209314}
+  - component: {fileID: 6337504189052662298}
+  - component: {fileID: 4026866972219397333}
+  m_Layer: 7
   m_Name: NetworkItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -125,6 +128,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _database: {fileID: 11400000, guid: 4a41f9c03840b4c42a467b1774145c00, type: 2}
   _visualRoot: {fileID: 5706715194315763475}
+  _body: {fileID: 4318505122420209314}
+  _collider: {fileID: 4026866972219397333}
 --- !u!114 &8497730101452954563
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -156,6 +161,71 @@ MonoBehaviour:
   _arcHeight: 0.25
   _popScale: 1.15
   _popTime: 0.15
+--- !u!54 &4318505122420209314
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1931711749682888356}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0.5
+  m_AngularDamping: 5
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 80
+  m_CollisionDetection: 3
+--- !u!114 &6337504189052662298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1931711749682888356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6c0be61502bb534f922ebb746851216, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkRigidbody
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkRigidbodyBaseExpanded: 0
+  UseRigidBodyForMotion: 0
+  AutoUpdateKinematicState: 0
+  AutoSetKinematicOnDespawn: 1
+--- !u!65 &4026866972219397333
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1931711749682888356}
+  m_Material: {fileID: 13400000, guid: 5b296623b3d8d47e293ecffdea07844a, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3, y: 0.3, z: 0.3}
+  m_Center: {x: 0, y: 0.15, z: 0}
 --- !u!1 &7916218912935841251
 GameObject:
   m_ObjectHideFlags: 0
