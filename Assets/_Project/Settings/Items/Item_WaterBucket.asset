@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Items.ItemDefinition
   _id: 5
   _displayName: Water Bucket
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: ee2db992c612f4328885bb29da338148, type: 3}
   _prefab: {fileID: 1879020958790553629, guid: 7ddeadeea7daa4f1e8cd63c450668eed, type: 3}
