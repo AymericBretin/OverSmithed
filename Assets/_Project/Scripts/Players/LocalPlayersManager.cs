@@ -29,6 +29,10 @@ namespace OverSmithed.Players
         private InputControl _lastPressedControl;
         private InputDevice _autoJoinDevice;
         private string _autoJoinScheme;
+        // One gamepad can show up as two devices (macOS: the same DualSense by USB cable and by Bluetooth). Both
+        // send every press, so a second gamepad joining at the same moment is that copy: it is ignored.
+        private const float DuplicateGamepadWindow = 0.15f;
+        private float _lastGamepadJoinTime = float.MinValue;
 
         /// <summary>Raised when a local player is added, accepted or removed.</summary>
         public event Action SlotsChanged;
@@ -180,6 +184,16 @@ namespace OverSmithed.Players
             if (scheme == null || IsInUse(device, scheme))
             {
                 return;
+            }
+            if (device is UnityEngine.InputSystem.Gamepad)
+            {
+                if (Time.unscaledTime - _lastGamepadJoinTime < DuplicateGamepadWindow)
+                {
+                    Debug.Log($"[LocalPlayersManager] '{device.displayName}' (#{device.deviceId}) ignored: same press " +
+                              "as the gamepad that just joined (one controller seen twice, e.g. USB + Bluetooth).");
+                    return;
+                }
+                _lastGamepadJoinTime = Time.unscaledTime;
             }
 
             var input = PlayerInput.Instantiate(_slotPrefab.gameObject, controlScheme: scheme, pairWithDevice: device);

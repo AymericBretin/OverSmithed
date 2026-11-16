@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 9074585975890402828}
   - component: {fileID: 4241680389930699402}
   - component: {fileID: 6366123789222199716}
+  - component: {fileID: 3662721793658422320}
   m_Layer: 6
   m_Name: NetworkPlayer
   m_TagString: Untagged
@@ -199,8 +200,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.PlayerMovement
   ShowTopMostFoldoutHeaderGroup: 1
-  _speed: 5
-  _turnSpeed: 720
+  _speed: 6
+  _accelerationTime: 0.08
+  _stopTime: 0.12
+  _turnSharpness: 20
+  _dashSpeed: 18
+  _dashTime: 0.16
+  _dashCooldown: 0.5
   _arenaHalfSize: 9.5
 --- !u!114 &167118907275330572
 MonoBehaviour:
@@ -215,12 +221,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.PlayerAnimator
   _dampTime: 0.1
-  _teleportFactor: 3
+  _teleportFactor: 4
   _carryBlendTime: 0.15
   _itemFollow: 1
   _handsRestHeight: 0.8
   _reachAngle: 35
   _reachTime: 0.25
+  _throwAngle: 55
+  _throwTime: 0.3
 --- !u!114 &9074585975890402828
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -277,6 +285,36 @@ MonoBehaviour:
   _dropBlockers:
     serializedVersion: 2
     m_Bits: 1
+  _throwForwardSpeed: 9
+  _throwUpSpeed: 2.5
+  _throwMomentum: 0.5
+--- !u!114 &3662721793658422320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450035355314237043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 046e946d4c9b94808a1bd15747e6b4d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.PlayerBodyMotion
+  _visual: {fileID: 6301662415859197057}
+  _leanPerSpeedChange: 2.5
+  _runLean: 5
+  _maxLean: 15
+  _bankPerTurn: 3
+  _maxBank: 14
+  _leanSmoothing: 0.08
+  _hopHeight: 0.07
+  _stepLength: 0.9
+  _stopSquash: 0.12
+  _startStretch: 0.08
+  _dashEndSquash: 0.05
+  _dashLean: 15
+  _springStiffness: 260
+  _springDamping: 11
 --- !u!1 &8257111962428553630
 GameObject:
   m_ObjectHideFlags: 0
