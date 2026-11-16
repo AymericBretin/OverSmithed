@@ -50,6 +50,7 @@ GameObject:
   - component: {fileID: 4241680389930699402}
   - component: {fileID: 6366123789222199716}
   - component: {fileID: 3662721793658422320}
+  - component: {fileID: 5123174603395937475}
   m_Layer: 6
   m_Name: NetworkPlayer
   m_TagString: Untagged
@@ -137,10 +138,10 @@ CharacterController:
   m_Height: 2
   m_Radius: 0.4
   m_SlopeLimit: 45
-  m_StepOffset: 0.3
+  m_StepOffset: 0.15
   m_SkinWidth: 0.05
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 1, z: 0}
+  m_Center: {x: 0, y: 1.05, z: 0}
 --- !u!114 &8033737775116665440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -207,7 +208,8 @@ MonoBehaviour:
   _dashSpeed: 18
   _dashTime: 0.16
   _dashCooldown: 0.5
-  _arenaHalfSize: 9.5
+  _gravity: 30
+  _maxFallSpeed: 25
 --- !u!114 &167118907275330572
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -315,6 +317,24 @@ MonoBehaviour:
   _dashLean: 15
   _springStiffness: 260
   _springDamping: 11
+--- !u!114 &5123174603395937475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450035355314237043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fb3bd2a3a8d842a1a72447687a5b926, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.PlayerFall
+  ShowTopMostFoldoutHeaderGroup: 1
+  _respawnDelay: 3
+  _blinkTime: 1.5
+  _blinkPeriod: 0.16
+  _visualRoot: {fileID: 6301662415859197057}
+  _poofPrefab: {fileID: 8220202884937276124, guid: fb8f2232aa052472cb95cc8aa9be4fd4, type: 3}
 --- !u!1 &8257111962428553630
 GameObject:
   m_ObjectHideFlags: 0

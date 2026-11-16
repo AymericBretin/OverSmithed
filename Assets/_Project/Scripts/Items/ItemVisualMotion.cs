@@ -40,6 +40,7 @@ namespace OverSmithed.Items
         private Vector3 _flyFromPosition;
         private Quaternion _flyFromRotation;
         private float _popElapsed = float.MaxValue;
+        private float _noFlightUntil = float.MinValue;
 
         /// <summary>Extra height (m, world) of the visual: set every frame by the player carrying the item, 0 otherwise.</summary>
         public float HandsLift { get; set; }
@@ -75,6 +76,17 @@ namespace OverSmithed.Items
             _shownRotation = _visual.parent.rotation * _restRotation;
         }
 
+        /// <summary>
+        /// The item was put somewhere far away on purpose (back on its counter after a fall): it appears there with
+        /// a pop, without flying. Works whether the new position arrived before or after this call (next 0.5 s).
+        /// </summary>
+        public void SkipNextFlight()
+        {
+            Snap();
+            _noFlightUntil = Time.time + 0.5f;
+            _popElapsed = 0f;
+        }
+
         /// <summary>The visual flies from <paramref name="worldPosition"/> to the item (for example out of a crate).</summary>
         public void FlyFrom(Vector3 worldPosition)
         {
@@ -93,7 +105,13 @@ namespace OverSmithed.Items
         {
             var deltaTime = Time.deltaTime;
             var anchor = transform.position;
-            if ((anchor - _lastAnchor).sqrMagnitude > _jumpDistance * _jumpDistance && _flyTime > 0f)
+            if ((anchor - _lastAnchor).sqrMagnitude > _jumpDistance * _jumpDistance && Time.time < _noFlightUntil)
+            {
+                Snap();
+                _noFlightUntil = float.MinValue;
+                _popElapsed = 0f;
+            }
+            else if ((anchor - _lastAnchor).sqrMagnitude > _jumpDistance * _jumpDistance && _flyTime > 0f)
             {
                 _flying = true;
                 _flyElapsed = 0f;

@@ -50,6 +50,15 @@ namespace OverSmithed.Players
         public byte SkinIndex => _skinIndex.Value;
         public bool CanMove => _canMove.Value;
 
+        /// <summary>True while this player fell off the map and waits to come back (see <see cref="PlayerFall"/>).</summary>
+        public bool IsOut => Fall != null && Fall.IsOut;
+
+        /// <summary>The player may move and use their hands: allowed by the host and not out after a fall.</summary>
+        public bool CanAct => CanMove && !IsOut;
+
+        private PlayerFall _fall;
+        private PlayerFall Fall => _fall != null ? _fall : _fall = GetComponent<PlayerFall>();
+
         /// <summary>False while the device of this player is unplugged (known on every machine).</summary>
         public bool IsInputConnected => _inputConnected.Value;
 

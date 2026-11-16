@@ -49,7 +49,8 @@ namespace OverSmithed.Counters
 
         public bool IsEmpty => Item == null;
 
-        private Transform ItemPoint => _itemPoint != null ? _itemPoint : transform;
+        /// <summary>Where an item's bottom sits on this counter.</summary>
+        public Transform ItemPoint => _itemPoint != null ? _itemPoint : transform;
 
         private void Awake()
         {
@@ -214,6 +215,8 @@ namespace OverSmithed.Counters
             var item = NetworkItem.Create(_itemPrefab, _startingItem, point.position, point.rotation);
             if (item != null)
             {
+                // A special item (water bucket...) comes back here if it falls off the map.
+                item.Home = this;
                 TryPlace(item);
             }
         }

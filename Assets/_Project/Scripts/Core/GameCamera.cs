@@ -100,16 +100,26 @@ namespace OverSmithed.Core
         {
             var look = framing.Look;
             var players = playing ? NetworkPlayer.Spawned : null;
-            if (players == null || players.Count == 0)
+            if (players == null)
             {
                 return look;
             }
+            // Players who fell off the map are not followed (nor while they fall, under the floor).
             var sum = Vector3.zero;
+            var count = 0;
             foreach (var player in players)
             {
-                sum += player.transform.position;
+                if (!player.IsOut && player.transform.position.y > -1f)
+                {
+                    sum += player.transform.position;
+                    count++;
+                }
             }
-            var average = sum / players.Count;
+            if (count == 0)
+            {
+                return look;
+            }
+            var average = sum / count;
             var center = _playArea.Bounds.center;
 
             // Axis too big for the screen: follow the players, but never show past the area.
