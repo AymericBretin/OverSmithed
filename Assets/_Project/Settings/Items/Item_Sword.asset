@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Items.ItemDefinition
   _id: 9
   _displayName: Sword
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 5db2a422904bd4e35bb45e7f96a5b198, type: 3}
   _prefab: {fileID: 5934791438476723848, guid: d27dce8fbbca442fb91c65b7660f99fc, type: 3}

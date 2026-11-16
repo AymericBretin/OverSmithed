@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Items.ItemDefinition
   _id: 3
   _displayName: Leather
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 42f1fd9a28244402294a28ec9802f109, type: 3}
   _prefab: {fileID: 4795149945090455732, guid: 1e1c4eda8b02943d1aa02480b337e52d, type: 3}

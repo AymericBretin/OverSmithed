@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Items.ItemDefinition
   _id: 2
   _displayName: Wood
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 346230a0d0fd54b40abb2a56a9577317, type: 3}
   _prefab: {fileID: 362645007302031765, guid: 469e55b8d8ff04ba1aa6916ae2533ebe, type: 3}

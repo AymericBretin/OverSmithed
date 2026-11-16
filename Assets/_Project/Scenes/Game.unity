@@ -19423,7 +19423,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 24, y: -16}
-  m_SizeDelta: {x: -48, y: 230}
+  m_SizeDelta: {x: -48, y: 264}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1343134520
 MonoBehaviour:
@@ -19438,6 +19438,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.UI.FakeOrderFeed
   _hud: {fileID: 1343134521}
+  _realOrders:
+  - {fileID: 11400000, guid: 43ccbac7173a3403e91eaf79f5b65f55, type: 2}
+  _recipeDatabase: {fileID: 11400000, guid: 309200b107fbc41059cacd180e628bd0, type: 2}
   _recipes:
   - ResultName: Wooden Sword
     ResultIcon: {fileID: 0}
@@ -19449,6 +19452,8 @@ MonoBehaviour:
     - Materials:
       - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
       Stations: 
+    Parts: []
+    JoinStation: 0
   - ResultName: Iron Sword
     ResultIcon: {fileID: 0}
     Groups:
@@ -19458,6 +19463,8 @@ MonoBehaviour:
     - Materials:
       - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
       Stations: 03000000i
+    Parts: []
+    JoinStation: 0
   - ResultName: Magic Staff
     ResultIcon: {fileID: 0}
     Groups:
@@ -19470,6 +19477,8 @@ MonoBehaviour:
     - Materials:
       - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
       Stations: 0100000002000000i
+    Parts: []
+    JoinStation: 0
   - ResultName: Shield
     ResultIcon: {fileID: 0}
     Groups:
@@ -19477,6 +19486,8 @@ MonoBehaviour:
       - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
       - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
       Stations: 04000000i
+    Parts: []
+    JoinStation: 0
   - ResultName: Iron Helmet
     ResultIcon: {fileID: 0}
     Groups:
@@ -19487,6 +19498,8 @@ MonoBehaviour:
     - Materials:
       - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
       Stations: 
+    Parts: []
+    JoinStation: 0
   - ResultName: Knight Armor
     ResultIcon: {fileID: 0}
     Groups:
@@ -19505,6 +19518,8 @@ MonoBehaviour:
     - Materials:
       - {fileID: 11400000, guid: ed9cc582efdae4a2abfeafc410689b6e, type: 2}
       Stations: 0300000004000000i
+    Parts: []
+    JoinStation: 0
   - ResultName: Battle Axe
     ResultIcon: {fileID: 0}
     Groups:
@@ -19518,6 +19533,8 @@ MonoBehaviour:
     - Materials:
       - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
       Stations: 
+    Parts: []
+    JoinStation: 0
   - ResultName: Wizard Staff
     ResultIcon: {fileID: 0}
     Groups:
@@ -19531,6 +19548,8 @@ MonoBehaviour:
     - Materials:
       - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
       Stations: 01000000i
+    Parts: []
+    JoinStation: 0
   - ResultName: Crystal Sword
     ResultIcon: {fileID: 0}
     Groups:
@@ -19546,6 +19565,8 @@ MonoBehaviour:
     - Materials:
       - {fileID: 11400000, guid: 35155517c9c464ef49a87c18b14e7143, type: 2}
       Stations: 
+    Parts: []
+    JoinStation: 0
   - ResultName: Royal Shield
     ResultIcon: {fileID: 0}
     Groups:
@@ -19562,6 +19583,8 @@ MonoBehaviour:
     - Materials:
       - {fileID: 11400000, guid: 98f17754fd3b249389a8144e8119d512, type: 2}
       Stations: 04000000i
+    Parts: []
+    JoinStation: 0
   - ResultName: Dragon Lance
     ResultIcon: {fileID: 0}
     Groups:
@@ -19582,6 +19605,8 @@ MonoBehaviour:
     - Materials:
       - {fileID: 11400000, guid: dcdfc6d65e7614a49b0e2bd88715e0f9, type: 2}
       Stations: 01000000i
+    Parts: []
+    JoinStation: 0
   _autoPlay: 1
   _ordersAtStart: 2
   _maxOrders: 5

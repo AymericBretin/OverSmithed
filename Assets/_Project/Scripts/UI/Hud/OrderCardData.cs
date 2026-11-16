@@ -23,6 +23,71 @@ namespace OverSmithed.UI
         {
             return new OrderCardData { ResultName = result.DisplayName, ResultIcon = result.Icon };
         }
+
+        /// <summary>
+        /// The card of a real order: follows the recipes from <paramref name="result"/> back to the raw materials.
+        /// Each raw material is a group, with the stations it goes through, in order (ore: furnace then anvil).
+        /// The station that joins several parts (the assembly table, like the plate in Overcooked) is not shown:
+        /// every order ends there, so players learn it once (Aymeric's choice).
+        /// Example, sword = blade + handle: [ore: furnace → anvil] [wood: workbench].
+        /// </summary>
+        public static OrderCardData FromRecipe(ItemDefinition result, RecipeDatabase recipes)
+        {
+            var data = FromItem(result);
+            data.Groups = GroupsFor(result, recipes, 0);
+            return data;
+        }
+
+        private static List<OrderCardGroup> GroupsFor(ItemDefinition item, RecipeDatabase recipes, int depth)
+        {
+            // A raw material (no recipe makes it): one group with just it. The depth limit stops a broken loop.
+            if (recipes == null || depth > 10 || !recipes.TryFindByOutput(item, out var recipe))
+            {
+                return new List<OrderCardGroup> { new() { Materials = { item } } };
+            }
+
+            var inputs = recipe.Inputs;
+            // Raw materials worked together (2 logs on the workbench): one group, the station under them
+            // (not the assembly table: joining is never shown).
+            if (inputs.Count > 1 && AllRaw(inputs, recipes))
+            {
+                var together = new OrderCardGroup();
+                if (recipe.Station != StationKind.AssemblyTable)
+                {
+                    together.Stations.Add(recipe.Station);
+                }
+                together.Materials.AddRange(inputs);
+                return new List<OrderCardGroup> { together };
+            }
+
+            var groups = new List<OrderCardGroup>();
+            foreach (var input in inputs)
+            {
+                groups.AddRange(GroupsFor(input, recipes, depth + 1));
+            }
+            // One input changed by a station: every group of it goes through that station next. Several parts
+            // joined together (assembly): nothing to show, see above.
+            if (inputs.Count == 1)
+            {
+                foreach (var group in groups)
+                {
+                    group.Stations.Add(recipe.Station);
+                }
+            }
+            return groups;
+        }
+
+        private static bool AllRaw(IReadOnlyList<ItemDefinition> items, RecipeDatabase recipes)
+        {
+            foreach (var item in items)
+            {
+                if (recipes.TryFindByOutput(item, out _))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     /// <summary>

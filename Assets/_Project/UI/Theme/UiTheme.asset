@@ -158,13 +158,13 @@ MonoBehaviour:
     Sprite: {fileID: 21300000, guid: b50171b57a7de4e21961a610216f118c, type: 3}
   - Name: StationFurnace
     Key: 26
-    Sprite: {fileID: 0}
+    Sprite: {fileID: 21300000, guid: 2eb13cf6e55d5478daa6ca8b0cb34970, type: 3}
   - Name: StationAnvil
     Key: 27
-    Sprite: {fileID: 0}
+    Sprite: {fileID: 21300000, guid: 7068a85f882a0483aaf564abfb92d52e, type: 3}
   - Name: StationWorkbench
     Key: 28
-    Sprite: {fileID: 0}
+    Sprite: {fileID: 21300000, guid: 2e725de2d61d7439baa45d1b5124255e, type: 3}
   - Name: StationAssemblyTable
     Key: 29
-    Sprite: {fileID: 0}
+    Sprite: {fileID: 21300000, guid: 70dea876116b14866958093db1786ee3, type: 3}

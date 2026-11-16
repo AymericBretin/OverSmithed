@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Items.ItemDefinition
   _id: 8
   _displayName: Handle
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: c4a572bc2ffd1431fb12bfa548f7ad1b, type: 3}
   _prefab: {fileID: 1508853739416631988, guid: 2318326056894470a8b555361b29426b, type: 3}

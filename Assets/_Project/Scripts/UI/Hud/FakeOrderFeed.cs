@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using OverSmithed.Crafting;
+using OverSmithed.Items;
 using UnityEngine;
 
 namespace OverSmithed.UI
@@ -8,6 +10,8 @@ namespace OverSmithed.UI
     /// order system exists. Local to each machine, nothing goes on the network. UI-10 (#54) replaces it with
     /// the real orders. Right-click the component for "Add order", "Add one of each recipe", "Deliver oldest",
     /// "Fail oldest".
+    /// With "Real Orders" filled, cards show those items made from the real recipes (RecipeDatabase); the
+    /// hand-made "Recipes" list (made-up orders, handy to test card widths) is used only when it is empty.
     /// </summary>
     public class FakeOrderFeed : MonoBehaviour
     {
@@ -21,6 +25,10 @@ namespace OverSmithed.UI
         }
 
         [SerializeField] private OrderCardsHud _hud;
+        [Tooltip("Items to order, shown with their real recipe. Empty: the made-up Recipes below are used.")]
+        [SerializeField] private List<ItemDefinition> _realOrders = new();
+        [SerializeField] private RecipeDatabase _recipeDatabase;
+        [Tooltip("Made-up orders (any materials), used when Real Orders is empty.")]
         [SerializeField] private List<OrderCardData> _recipes = new();
         [SerializeField] private bool _autoPlay = true;
         [SerializeField] private int _ordersAtStart = 2;
@@ -33,7 +41,31 @@ namespace OverSmithed.UI
         [SerializeField, Range(0f, 1f)] private float _deliverChance = 0.5f;
 
         private readonly List<FakeOrder> _orders = new();
+        private readonly List<OrderCardData> _cards = new();
         private float _nextSpawn;
+
+        // The cards to pick from: the real orders (built once from their recipes), else the made-up ones.
+        private List<OrderCardData> Cards
+        {
+            get
+            {
+                if (_realOrders.Count == 0)
+                {
+                    return _recipes;
+                }
+                if (_cards.Count == 0)
+                {
+                    foreach (var item in _realOrders)
+                    {
+                        if (item != null)
+                        {
+                            _cards.Add(OrderCardData.FromRecipe(item, _recipeDatabase));
+                        }
+                    }
+                }
+                return _cards;
+            }
+        }
 
         private void Start()
         {
@@ -76,14 +108,15 @@ namespace OverSmithed.UI
         [ContextMenu("Add order")]
         private void AddOrder()
         {
-            if (_hud == null || _recipes.Count == 0 || _orders.Count >= _maxOrders)
+            var cards = Cards;
+            if (_hud == null || cards.Count == 0 || _orders.Count >= _maxOrders)
             {
                 return;
             }
             var duration = Random.Range(_patience.x, _patience.y);
             _orders.Add(new FakeOrder
             {
-                Card = _hud.Add(_recipes[Random.Range(0, _recipes.Count)]),
+                Card = _hud.Add(cards[Random.Range(0, cards.Count)]),
                 Duration = duration,
                 DeliverAt = Random.value < _deliverChance ? duration * Random.Range(0.3f, 0.9f) : -1f,
             });
@@ -97,7 +130,7 @@ namespace OverSmithed.UI
             {
                 return;
             }
-            foreach (var recipe in _recipes)
+            foreach (var recipe in Cards)
             {
                 var duration = Random.Range(_patience.x, _patience.y);
                 _orders.Add(new FakeOrder { Card = _hud.Add(recipe), Duration = duration, DeliverAt = -1f });

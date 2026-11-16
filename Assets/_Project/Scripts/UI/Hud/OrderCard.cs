@@ -20,6 +20,8 @@ namespace OverSmithed.UI
         [SerializeField] private IconView _resultIcon;
         [Tooltip("Main panel background (tinted red when the order is lost).")]
         [SerializeField] private Image _background;
+        [Tooltip("Optional: the small card behind the result icon, so the item to forge stands out (tinted red too).")]
+        [SerializeField] private Image _resultCard;
         [Tooltip("Row of tabs under the main panel (drawn behind it, so the tabs seem to come out from under it).")]
         [SerializeField] private RectTransform _tabs;
         [Tooltip("Inactive child copied for each group: a panel with a 'Materials' row and, under it, a 'Stations' " +
@@ -71,6 +73,10 @@ namespace OverSmithed.UI
             _resultIcon.Show(data.ResultIcon, data.ResultName);
             _panels.Clear();
             _panels.Add(_background);
+            if (_resultCard != null)
+            {
+                _panels.Add(_resultCard);
+            }
 
             foreach (var group in data.Groups)
             {
