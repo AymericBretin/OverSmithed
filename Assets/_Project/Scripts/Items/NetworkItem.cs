@@ -31,6 +31,12 @@ namespace OverSmithed.Items
         public ItemDefinition Definition => _database != null ? _database.Get(_itemId.Value) : null;
 
         /// <summary>
+        /// The child that holds the visual, or null if the visual is created on the item itself. It is not
+        /// networked: each machine may move it a little for looks (the carried item follows the hands).
+        /// </summary>
+        public Transform VisualRoot => _visualRoot != null && _visualRoot != transform ? _visualRoot : null;
+
+        /// <summary>
         /// Host only: creates a new item of this kind at this place, on every machine.
         /// The item belongs to the current scene and is destroyed with it. Returns null if not allowed.
         /// </summary>
