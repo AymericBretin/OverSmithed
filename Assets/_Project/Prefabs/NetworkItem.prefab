@@ -130,6 +130,7 @@ MonoBehaviour:
   _visualRoot: {fileID: 5706715194315763475}
   _body: {fileID: 4318505122420209314}
   _collider: {fileID: 4026866972219397333}
+  _poofPrefab: {fileID: 8220202884937276124, guid: fb8f2232aa052472cb95cc8aa9be4fd4, type: 3}
 --- !u!114 &8497730101452954563
 MonoBehaviour:
   m_ObjectHideFlags: 0

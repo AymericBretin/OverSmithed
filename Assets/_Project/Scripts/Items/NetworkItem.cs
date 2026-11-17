@@ -1,5 +1,8 @@
+using OverSmithed.Core;
+using OverSmithed.Counters;
 using OverSmithed.Interaction;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 
 namespace OverSmithed.Items
@@ -24,6 +27,8 @@ namespace OverSmithed.Items
         [SerializeField] private Rigidbody _body;
         [Tooltip("Resized to the visual's model each time the visual is created.")]
         [SerializeField] private BoxCollider _collider;
+        [Tooltip("Small cloud played where a special item comes back after a fall.")]
+        [SerializeField] private ParticleSystem _poofPrefab;
 
         private readonly NetworkVariable<int> _itemId = new(ItemDefinition.NoneId);
 
@@ -42,6 +47,12 @@ namespace OverSmithed.Items
         /// networked: each machine may move it a little for looks (the carried item follows the hands).
         /// </summary>
         public Transform VisualRoot => _visualRoot != null && _visualRoot != transform ? _visualRoot : null;
+
+        /// <summary>
+        /// Host only: the counter this item started on (special items like the water bucket). If the item falls off
+        /// the map it comes back there instead of being destroyed. Null for normal items.
+        /// </summary>
+        public Counter Home { get; set; }
 
         /// <summary>Host: the item is free and moved by physics (on the floor, sliding).</summary>
         public bool HasPhysics => _body != null && !_body.isKinematic;
@@ -148,8 +159,84 @@ namespace OverSmithed.Items
             }
         }
 
+        // Host: a free item under the fall height fell off the map.
+        private void Update()
+        {
+            if (IsServer && IsSpawned && transform.parent == null && transform.position.y < FallLimit.Height)
+            {
+                FellOff();
+            }
+        }
+
+        /// <summary>
+        /// Host only: the item fell off the map (alone, or in the hands of a falling player). A normal item is
+        /// destroyed (crates give new ones). An item with a <see cref="Home"/> counter goes back on it, or on the
+        /// nearest empty counter if that one is taken; destroyed only if no counter is free.
+        /// </summary>
+        public void FellOff()
+        {
+            if (!IsServer || !IsSpawned)
+            {
+                return;
+            }
+            var counter = FindReturnCounter();
+            if (counter == null)
+            {
+                NetworkObject.Despawn();
+                return;
+            }
+            StopPhysics();
+            // Teleport: the other machines jump straight there instead of sliding up from under the map.
+            var point = counter.ItemPoint;
+            if (TryGetComponent<NetworkTransform>(out var networkTransform))
+            {
+                networkTransform.Teleport(point.position, point.rotation, transform.localScale);
+            }
+            counter.TryPlace(this);
+            CameBackRpc(point.position);
+        }
+
+        private Counter FindReturnCounter()
+        {
+            if (Home == null)
+            {
+                return null;
+            }
+            if (Home.IsSpawned && Home.IsEmpty)
+            {
+                return Home;
+            }
+            Counter best = null;
+            var bestDistance = float.MaxValue;
+            foreach (var counter in FindObjectsByType<Counter>())
+            {
+                var distance = (counter.transform.position - Home.transform.position).sqrMagnitude;
+                if (counter.IsSpawned && counter.IsEmpty && distance < bestDistance)
+                {
+                    best = counter;
+                    bestDistance = distance;
+                }
+            }
+            return best;
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void CameBackRpc(Vector3 position)
+        {
+            // Appears on the counter with a poof (no flight from under the map).
+            if (TryGetComponent<ItemVisualMotion>(out var motion))
+            {
+                motion.SkipNextFlight();
+            }
+            if (_poofPrefab != null)
+            {
+                Instantiate(_poofPrefab, position + Vector3.up * 0.3f, Quaternion.identity);
+            }
+        }
+
         public override void OnNetworkDespawn()
         {
+            Home = null;
             _itemId.OnValueChanged -= HandleItemIdChanged;
             Despawned?.Invoke(this);
         }

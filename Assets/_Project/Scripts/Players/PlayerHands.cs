@@ -84,7 +84,7 @@ namespace OverSmithed.Players
 
         private void Update()
         {
-            if (!IsSpawned || !IsOwner || !_player.CanMove || !TryGetActions(out var interact, out var throwAction))
+            if (!IsSpawned || !IsOwner || !_player.CanAct || !TryGetActions(out var interact, out var throwAction))
             {
                 return;
             }
@@ -118,6 +118,21 @@ namespace OverSmithed.Players
             // Never trust a speed sent by a client blindly: at most the top speed.
             var maxSpeed = _movement != null ? _movement.MaxSpeed : 0f;
             TryDrop(Vector3.ClampMagnitude(new Vector3(playerVelocity.x, 0f, playerVelocity.z), maxSpeed));
+        }
+
+        /// <summary>
+        /// Host only: the carried item is lost (the player fell off the map). It is destroyed, or goes back to its
+        /// counter if it is a special item (see <see cref="NetworkItem.FellOff"/>).
+        /// </summary>
+        public void LoseHeldItem()
+        {
+            var item = IsServer && IsSpawned ? HeldItem : null;
+            if (item == null)
+            {
+                return;
+            }
+            Release(item);
+            item.FellOff();
         }
 
         /// <summary>

@@ -43,7 +43,7 @@ namespace OverSmithed.Players
         // LateUpdate: after PlayerMovement moved and turned the player this frame.
         private void LateUpdate()
         {
-            var canAim = _player.IsSpawned && _player.IsOwner && _player.CanMove;
+            var canAim = _player.IsSpawned && _player.IsOwner && _player.CanAct;
             SetCurrent(canAim ? FindBest() : null);
         }
 

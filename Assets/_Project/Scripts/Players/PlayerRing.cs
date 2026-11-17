@@ -38,7 +38,7 @@ namespace OverSmithed.Players
         // Checked every frame (cheap): the owner and the local index are only known once the player is spawned.
         private void LateUpdate()
         {
-            var show = _player.IsSpawned && _player.IsOwner && _colors.Length > 0;
+            var show = _player.IsSpawned && _player.IsOwner && !_player.IsOut && _colors.Length > 0;
             if (show != _shown)
             {
                 _shown = show;

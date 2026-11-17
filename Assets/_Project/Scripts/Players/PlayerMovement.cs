@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,6 +11,8 @@ namespace OverSmithed.Players
     /// Whether moving is allowed at all is a rule decided by the host (<see cref="NetworkPlayer.CanMove"/>).
     /// The feel: a very short speed-up and a small slide when stopping, turns that are fast first and soft at
     /// the end, and a dash (short burst, then a cooldown). The dash is local too, so it is instant even online.
+    /// Gravity: with no floor under them, players fall (off the map: see <see cref="PlayerFall"/>). Walls, counters
+    /// and other players stop them (CharacterController collisions).
     /// </summary>
     [RequireComponent(typeof(NetworkPlayer), typeof(CharacterController))]
     public class PlayerMovement : NetworkBehaviour
@@ -35,8 +38,11 @@ namespace OverSmithed.Players
         [Tooltip("Time (seconds) after a dash starts before the next one is possible.")]
         [SerializeField] private float _dashCooldown = 0.5f;
 
-        [Tooltip("Players are kept inside a square of this half size, centered on the origin.")]
-        [SerializeField] private float _arenaHalfSize = 9.5f;
+        [Header("Fall")]
+        [Tooltip("Gravity (m/s²) when there is no floor under the player. Higher than real (9.8) feels less floaty.")]
+        [SerializeField] private float _gravity = 30f;
+        [Tooltip("Fastest fall speed (m/s).")]
+        [SerializeField] private float _maxFallSpeed = 25f;
 
         private NetworkPlayer _player;
         private CharacterController _controller;
@@ -48,6 +54,7 @@ namespace OverSmithed.Players
         private Vector3 _dashDirection;
         private float _dashLeft;
         private float _nextDashTime;
+        private float _fallSpeed;
 
         /// <summary>Top speed in meters per second (stick or keys pushed all the way).</summary>
         public float MaxSpeed => _speed;
@@ -69,11 +76,9 @@ namespace OverSmithed.Players
 
         private void Update()
         {
-            if (!IsSpawned || !IsOwner || !_player.CanMove || !TryGetActions(out var moveAction, out var dashAction))
+            if (!IsSpawned || !IsOwner || !_player.CanAct || !TryGetActions(out var moveAction, out var dashAction))
             {
-                _runVelocity = Vector3.zero;
-                _dashLeft = 0f;
-                Velocity = Vector3.zero;
+                StopMoving();
                 return;
             }
             var deltaTime = Time.deltaTime;
@@ -110,12 +115,16 @@ namespace OverSmithed.Players
                 }
             }
 
-            // Clamp the requested motion rather than the position: a CharacterController must only move through Move().
-            var position = transform.position;
-            var target = position + velocity * deltaTime;
-            target.x = Mathf.Clamp(target.x, -_arenaHalfSize, _arenaHalfSize);
-            target.z = Mathf.Clamp(target.z, -_arenaHalfSize, _arenaHalfSize);
-            _controller.Move(target - position);
+            // On the floor a small downward speed keeps the player on it (also down small steps).
+            if (_controller.isGrounded && _fallSpeed < 0f)
+            {
+                _fallSpeed = -2f;
+            }
+            _fallSpeed = Mathf.Max(_fallSpeed - _gravity * deltaTime, -_maxFallSpeed);
+            velocity.y = _fallSpeed;
+
+            // A CharacterController must only move through Move(): it stops on walls, counters and other players.
+            _controller.Move(velocity * deltaTime);
             var moved = _controller.velocity;
             Velocity = new Vector3(moved.x, 0f, moved.z);
             // Against a wall the run speed drops too, so the player doesn't "push" for a moment after.
@@ -131,6 +140,38 @@ namespace OverSmithed.Players
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(facing),
                     1f - Mathf.Exp(-_turnSharpness * deltaTime));
             }
+        }
+
+        /// <summary>
+        /// Owner machine only: puts the player at <paramref name="position"/> right away (no smoothing on the
+        /// other machines), standing still. Used to come back after a fall.
+        /// </summary>
+        public void Teleport(Vector3 position, Quaternion rotation)
+        {
+            if (!IsOwner)
+            {
+                return;
+            }
+            // A CharacterController keeps its own position: turn it off while the transform is moved.
+            _controller.enabled = false;
+            if (TryGetComponent<NetworkTransform>(out var networkTransform) && networkTransform.CanCommitToTransform)
+            {
+                networkTransform.Teleport(position, rotation, transform.localScale);
+            }
+            else
+            {
+                transform.SetPositionAndRotation(position, rotation);
+            }
+            _controller.enabled = true;
+            StopMoving();
+        }
+
+        private void StopMoving()
+        {
+            _runVelocity = Vector3.zero;
+            _dashLeft = 0f;
+            _fallSpeed = 0f;
+            Velocity = Vector3.zero;
         }
 
         private bool TryGetActions(out InputAction moveAction, out InputAction dashAction)
