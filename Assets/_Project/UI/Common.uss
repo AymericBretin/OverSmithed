@@ -100,9 +100,10 @@
 
 .hud {
     flex-grow: 1;
-    flex-direction: row;
-    justify-content: space-between;
-    /* Bottom of the screen: the top is for the order cards (UI-7). */
+    flex-direction: column;
+    justify-content: flex-start;
+    /* Top right, in a column: the top left is for the order cards (UI-7), the bottom corners for the coins and the
+       timer (UI-8). Temporary: this old HUD is deleted by the pause menu (UI-6). */
     align-items: flex-end;
     padding: 24px;
 }
@@ -130,7 +131,8 @@
 }
 
 .hud-column {
-    align-items: flex-start;
+    align-items: flex-end;
+    margin-bottom: 12px;
 }
 
 .hud-message {
