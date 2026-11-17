@@ -8,7 +8,7 @@ namespace OverSmithed.UI
 {
     /// <summary>
     /// The settings panel (prefab UI/Prefabs/Screens/SettingsPanel): music and effects volume, display mode and
-    /// resolution, reset to default. Every change is applied and saved right away through <see cref="GameSettings"/>.
+    /// resolution, a button to the controls panel (<see cref="ControlsScreen"/>), reset to default. Every change is applied and saved right away through <see cref="GameSettings"/>.
     /// The screen that opens it (main menu, later the pause menu) selects <see cref="FirstSelectable"/> and listens to
     /// <see cref="BackButton"/>.
     /// </summary>
@@ -23,6 +23,8 @@ namespace OverSmithed.UI
         [SerializeField] private TMP_Text _effectsValue;
         [SerializeField] private TMP_Dropdown _displayDropdown;
         [SerializeField] private TMP_Dropdown _resolutionDropdown;
+        [Tooltip("Opens the controls panel (the screen that opened this panel listens to it).")]
+        [SerializeField] private Button _controlsButton;
         [SerializeField] private Button _resetButton;
         [SerializeField] private Button _backButton;
 
@@ -33,6 +35,9 @@ namespace OverSmithed.UI
 
         /// <summary>The Back button: the screen that opened this panel closes it on click.</summary>
         public Button BackButton => _backButton;
+
+        /// <summary>The Controls button: the screen that opened this panel opens the controls panel on click.</summary>
+        public Button ControlsButton => _controlsButton;
 
         /// <summary>True while a dropdown list is open (then Cancel closes the list, not the panel).</summary>
         public bool IsDropdownOpen => _displayDropdown.IsExpanded || _resolutionDropdown.IsExpanded;
