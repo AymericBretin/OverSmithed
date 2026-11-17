@@ -16078,6 +16078,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1884193228}
     m_Modifications:
+    - target: {fileID: 37941922224622051, guid: 0c1e619b030de4609addf055cbc8a395, type: 3}
+      propertyPath: m_MinHeight
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 37941922224622051, guid: 0c1e619b030de4609addf055cbc8a395, type: 3}
+      propertyPath: m_PreferredHeight
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 560350921913057387, guid: 0c1e619b030de4609addf055cbc8a395, type: 3}
+      propertyPath: _selectOnHover
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3695692414089899277, guid: 0c1e619b030de4609addf055cbc8a395, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1.45
+      objectReference: {fileID: 0}
     - target: {fileID: 5912176626711431795, guid: 0c1e619b030de4609addf055cbc8a395, type: 3}
       propertyPath: m_Pivot.x
       value: 1
@@ -16157,6 +16173,10 @@ PrefabInstance:
     - target: {fileID: 5912176626711431795, guid: 0c1e619b030de4609addf055cbc8a395, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6853611469163144378, guid: 0c1e619b030de4609addf055cbc8a395, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1.45
       objectReference: {fileID: 0}
     - target: {fileID: 7747223938853943842, guid: 0c1e619b030de4609addf055cbc8a395, type: 3}
       propertyPath: m_text

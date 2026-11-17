@@ -29,10 +29,6 @@ namespace OverSmithed.Players
         private InputControl _lastPressedControl;
         private InputDevice _autoJoinDevice;
         private string _autoJoinScheme;
-        // One gamepad can show up as two devices (macOS: the same DualSense by USB cable and by Bluetooth). Both
-        // send every press, so a second gamepad joining at the same moment is that copy: it is ignored.
-        private const float DuplicateGamepadWindow = 0.15f;
-        private float _lastGamepadJoinTime = float.MinValue;
 
         /// <summary>Raised when a local player is added, accepted or removed.</summary>
         public event Action SlotsChanged;
@@ -64,7 +60,7 @@ namespace OverSmithed.Players
             _joinAction.performed += HandleJoinPerformed;
 
             // Remembers which device was used last (mouse click, key or gamepad button), for auto-join.
-            _anyButtonListener = InputSystem.onAnyButtonPress.Call(control => _lastPressedControl = control);
+            _anyButtonListener = InputSystem.onAnyButtonPress.Call(HandleAnyButtonPress);
         }
 
         private void Start()
@@ -171,11 +167,11 @@ namespace OverSmithed.Players
         {
             if (context.ReadValueAsButton())
             {
-                TryJoin(context.control.device, ControlSchemeOf(context));
+                TryJoin(context.control.device, ControlSchemeOf(context), context.control);
             }
         }
 
-        private void TryJoin(InputDevice device, string scheme)
+        private void TryJoin(InputDevice device, string scheme, InputControl pressed = null)
         {
             if (_roster == null || _roster.IsLocked || _slots.Count >= NetworkConstants.MaxPlayers)
             {
@@ -185,15 +181,17 @@ namespace OverSmithed.Players
             {
                 return;
             }
-            if (device is UnityEngine.InputSystem.Gamepad)
+            if (pressed != null && IsMirrorOfJoinedGamepad(device, pressed))
             {
-                if (Time.unscaledTime - _lastGamepadJoinTime < DuplicateGamepadWindow)
-                {
-                    Debug.Log($"[LocalPlayersManager] '{device.displayName}' (#{device.deviceId}) ignored: same press " +
-                              "as the gamepad that just joined (one controller seen twice, e.g. USB + Bluetooth).");
-                    return;
-                }
-                _lastGamepadJoinTime = Time.unscaledTime;
+                Debug.Log($"[LocalPlayersManager] '{device.displayName}' (#{device.deviceId}) ignored: a joined gamepad " +
+                          "has the same button down (one controller seen twice, e.g. USB + Bluetooth).");
+                return;
+            }
+            // Online, each computer has one player (couch play with several devices is the local mode): another device
+            // is not a new player, it is that player switching device (HandleAnyButtonPress). The host checks it too.
+            if (IsOnline && _slots.Count > 0)
+            {
+                return;
             }
 
             var input = PlayerInput.Instantiate(_slotPrefab.gameObject, controlScheme: scheme, pairWithDevice: device);
@@ -207,6 +205,32 @@ namespace OverSmithed.Players
             SlotsChanged?.Invoke();
         }
 
+        // One gamepad can show up as two devices (macOS: the same DualSense by USB cable and by Bluetooth): every press
+        // arrives on both. A gamepad that is not joined yet, pressing a button that a joined gamepad also holds down
+        // right now, is that copy. Checked on every press (not only the first one), so pressing A again later (to start
+        // the game...) never adds a ghost player. Two real players would only clash if they press at the very same
+        // moment; the second one just presses again.
+        private bool IsMirrorOfJoinedGamepad(InputDevice device, InputControl pressed)
+        {
+            if (device is not UnityEngine.InputSystem.Gamepad)
+            {
+                return false;
+            }
+            foreach (var slot in _slots)
+            {
+                if (slot.Device is not UnityEngine.InputSystem.Gamepad joined || joined == device)
+                {
+                    continue;
+                }
+                if (joined.TryGetChildControl(pressed.name) is UnityEngine.InputSystem.Controls.ButtonControl button &&
+                    (button.isPressed || button.wasPressedThisFrame || button.wasReleasedThisFrame))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         // The binding that fired tells which control scheme the player wants (same keyboard, two schemes).
         private static string ControlSchemeOf(InputAction.CallbackContext context)
         {
@@ -218,11 +242,78 @@ namespace OverSmithed.Players
         {
             return scheme switch
             {
-                "KeyboardLeft" => "Clavier (ZQSD)",
-                "KeyboardRight" => "Clavier (flèches)",
-                _ => "Manette"
+                "KeyboardLeft" => "Keyboard (left)",
+                "KeyboardRight" => "Keyboard (arrows)",
+                _ => "Gamepad"
             };
         }
+
+        // Remembers the last device used (for auto-join), and online moves the only local player to the device they
+        // just pressed a button on: clicking "Host" with the mouse then playing with a gamepad must just work.
+        private void HandleAnyButtonPress(InputControl control)
+        {
+            _lastPressedControl = control;
+            if (IsOnline && _slots.Count == 1)
+            {
+                SwitchDevice(_slots[0], control);
+            }
+        }
+
+        private void SwitchDevice(LocalPlayerSlot slot, InputControl control)
+        {
+            var device = control.device;
+            string scheme;
+            if (device is Gamepad)
+            {
+                // A copy of the same gamepad (USB + Bluetooth) must not steal the player from the real one.
+                if (IsMirrorOfJoinedGamepad(device, control))
+                {
+                    return;
+                }
+                scheme = "Gamepad";
+            }
+            else if (device is Keyboard)
+            {
+                scheme = IsBoundInScheme(control, "KeyboardRight") ? "KeyboardRight" : "KeyboardLeft";
+            }
+            else
+            {
+                return; // Mouse, pen...: not a way to play.
+            }
+            if (slot.Device == device && slot.ControlScheme == scheme)
+            {
+                return;
+            }
+            slot.SwitchDevice(scheme, device);
+            Debug.Log($"[LocalPlayersManager] Online player now uses {device.displayName} ({scheme}).");
+            SlotsChanged?.Invoke();
+        }
+
+        // True when the key is used by a binding of that scheme (arrows, Enter... for "KeyboardRight").
+        private bool IsBoundInScheme(InputControl control, string scheme)
+        {
+            foreach (var map in _joinActions.actionMaps)
+            {
+                foreach (var binding in map.bindings)
+                {
+                    if (binding.isComposite || string.IsNullOrEmpty(binding.effectivePath) ||
+                        binding.groups == null || !binding.groups.Contains(scheme))
+                    {
+                        continue;
+                    }
+                    if (InputControlPath.Matches(binding.effectivePath, control))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public const string OnlineOnePlayerMessage = "Online games: one player per computer.";
+
+        private static bool IsOnline =>
+            SessionService.Instance != null && SessionService.Instance.Mode == SessionMode.Online;
 
         private bool IsInUse(InputDevice device, string scheme)
         {

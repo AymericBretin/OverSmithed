@@ -46,7 +46,11 @@ namespace OverSmithed.UI
             var current = eventSystem.currentSelectedGameObject;
             if (current != null && current.activeInHierarchy)
             {
-                _lastSelected = current;
+                // A selection that only comes from the mouse hovering is not remembered (it goes away on exit).
+                if (!SelectableFeedback.IsHoverSelection(current))
+                {
+                    _lastSelected = current;
+                }
                 return;
             }
             var fallback = _lastSelected != null && _lastSelected.activeInHierarchy ? _lastSelected : _defaultSelection;

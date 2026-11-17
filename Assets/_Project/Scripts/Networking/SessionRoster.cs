@@ -100,6 +100,21 @@ namespace OverSmithed.Networking
             RequestLeaveRpc(localIndex);
         }
 
+        /// <summary>
+        /// Lobby skin choice: asks the host for the next (+1) or previous (-1) skin for this local player.
+        /// The host skips skins already taken by other players; the new skin reaches every machine through the roster.
+        /// </summary>
+        public void RequestSkinChange(byte localIndex, int direction)
+        {
+            if (direction != 0)
+            {
+                RequestSkinChangeRpc(localIndex, (sbyte)Mathf.Clamp(direction, -1, 1));
+            }
+        }
+
+        /// <summary>The skin library used by the roster (names for the lobby, prefabs for the avatars).</summary>
+        public SkinLibrary Skins => _skins;
+
         // ---------- Server only ----------
 
         public void SetLocked(bool locked)
@@ -128,6 +143,11 @@ namespace OverSmithed.Networking
             {
                 refusal = $"The game is full ({NetworkConstants.MaxPlayers} players).";
             }
+            else if (IsOnlineSession() && HasEntryFrom(clientId))
+            {
+                // Online: one player per computer (several players on one computer is the local mode).
+                refusal = LocalPlayersManager.OnlineOnePlayerMessage;
+            }
 
             if (refusal != null)
             {
@@ -153,6 +173,63 @@ namespace OverSmithed.Networking
             {
                 _entries.RemoveAt(index);
             }
+        }
+
+        [Rpc(SendTo.Server)]
+        private void RequestSkinChangeRpc(byte localIndex, sbyte direction, RpcParams rpcParams = default)
+        {
+            var index = IndexOf(rpcParams.Receive.SenderClientId, localIndex);
+            var count = _skins != null ? Mathf.Min(_skins.Count, byte.MaxValue + 1) : 0;
+            if (index < 0 || _isLocked.Value || count <= 1 || direction == 0)
+            {
+                return;
+            }
+            var entry = _entries[index];
+            // Walk in the asked direction until a skin nobody else uses (back to the same one if all are taken).
+            var skin = (int)entry.SkinIndex;
+            for (var step = 0; step < count; step++)
+            {
+                skin = ((skin + direction) % count + count) % count;
+                if (skin == entry.SkinIndex || !IsSkinUsedByOther(skin, index))
+                {
+                    break;
+                }
+            }
+            if (skin == entry.SkinIndex)
+            {
+                return;
+            }
+            entry.SkinIndex = (byte)skin;
+            _entries[index] = entry;
+        }
+
+        private static bool IsOnlineSession()
+        {
+            return SessionService.Instance != null && SessionService.Instance.Mode == SessionMode.Online;
+        }
+
+        private bool HasEntryFrom(ulong clientId)
+        {
+            foreach (var entry in _entries)
+            {
+                if (entry.ClientId == clientId)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool IsSkinUsedByOther(int skin, int exceptIndex)
+        {
+            for (var i = 0; i < _entries.Count; i++)
+            {
+                if (i != exceptIndex && _entries[i].SkinIndex == skin)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         [Rpc(SendTo.SpecifiedInParams)]
