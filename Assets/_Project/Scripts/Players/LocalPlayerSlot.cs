@@ -1,4 +1,5 @@
 using System;
+using OverSmithed.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -52,6 +53,7 @@ namespace OverSmithed.Players
         {
             if (Input != null)
             {
+                ControlBindings.Unregister(Input.actions);
                 Input.onActionTriggered -= HandleActionTriggered;
                 Input.onDeviceLost -= HandleDeviceLost;
                 Input.onDeviceRegained -= HandleDeviceRegained;
@@ -62,6 +64,8 @@ namespace OverSmithed.Players
         {
             DeviceLabel = deviceLabel;
             State = SlotState.Pending;
+            // This player's copy of the actions uses the keys chosen in the controls screen.
+            ControlBindings.Register(Input.actions);
             name = $"LocalPlayerSlot {LocalIndex} ({ControlScheme})";
         }
 

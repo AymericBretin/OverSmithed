@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OverSmithed.Core;
 using OverSmithed.Networking;
 using Unity.Netcode;
 using UnityEngine;
@@ -56,6 +57,8 @@ namespace OverSmithed.Players
 
             // Private copy of the players' actions: PlayerInput instances enable/disable maps on the asset they use.
             _joinActions = Instantiate(_slotPrefab.GetComponent<PlayerInput>().actions);
+            // Join follows the Interact key chosen in the controls screen.
+            ControlBindings.Register(_joinActions);
             _joinAction = _joinActions.FindAction("Join/Join", throwIfNotFound: true);
             _joinAction.performed += HandleJoinPerformed;
 
@@ -86,6 +89,7 @@ namespace OverSmithed.Players
             BindRoster(null);
 
             _joinAction.performed -= HandleJoinPerformed;
+            ControlBindings.Unregister(_joinActions);
             Destroy(_joinActions);
             _anyButtonListener?.Dispose();
         }
