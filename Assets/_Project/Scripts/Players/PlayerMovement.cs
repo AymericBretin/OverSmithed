@@ -76,15 +76,19 @@ namespace OverSmithed.Players
 
         private void Update()
         {
-            if (!IsSpawned || !IsOwner || !_player.CanAct || !TryGetActions(out var moveAction, out var dashAction))
+            if (!IsSpawned || !IsOwner || !_player.CanActIgnoringPause ||
+                !TryGetActions(out var moveAction, out var dashAction))
             {
                 StopMoving();
                 return;
             }
             var deltaTime = Time.deltaTime;
+            // Pause menu open: no input, but the player still slows down and falls (online the game goes on: a player
+            // who pauses while falling off the edge must not hang in the air). In a local game time is stopped anyway.
+            var paused = _player.IsPausedHere;
 
             // The camera looks along +Z without yaw, so stick/keys map directly onto the ground plane.
-            var input = Vector2.ClampMagnitude(moveAction.ReadValue<Vector2>(), 1f);
+            var input = paused ? Vector2.zero : Vector2.ClampMagnitude(moveAction.ReadValue<Vector2>(), 1f);
             var direction = new Vector3(input.x, 0f, input.y);
 
             // Run: speed up fast, slow down a bit slower (a small slide).
@@ -94,7 +98,7 @@ namespace OverSmithed.Players
             _runVelocity = Vector3.MoveTowards(_runVelocity, wanted, rate * deltaTime);
 
             // Dash: where the stick points, or straight ahead when it is released.
-            if (dashAction != null && dashAction.WasPressedThisFrame() && Time.time >= _nextDashTime)
+            if (!paused && dashAction != null && dashAction.WasPressedThisFrame() && Time.time >= _nextDashTime)
             {
                 _dashDirection = direction.sqrMagnitude > 0.01f ? direction.normalized : transform.forward;
                 _dashLeft = _dashTime;
