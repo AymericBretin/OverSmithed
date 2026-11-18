@@ -130,6 +130,18 @@ namespace OverSmithed.WorldMap
         }
 
 #if UNITY_EDITOR
+        /// <summary>Editor: makes sure the walls open under <paramref name="box"/> (and forgets deleted boxes).</summary>
+        public void EnsureGapBox(BoxCollider box)
+        {
+            UnityEditor.Undo.RecordObject(this, "Gap Box");
+            _gapBoxes.RemoveAll(existing => existing == null);
+            if (box != null && !_gapBoxes.Contains(box))
+            {
+                _gapBoxes.Add(box);
+            }
+            UnityEditor.EditorUtility.SetDirty(this);
+        }
+
         [ContextMenu("Rebuild Shape")]
         public void RebuildShape()
         {
