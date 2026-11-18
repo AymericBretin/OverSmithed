@@ -6,7 +6,7 @@ namespace OverSmithed.Editor
     /// <summary>
     /// Pressing Play in a game scene always starts from the Bootstrap scene, so the NetworkManager and
     /// application services exist (also applies to Multiplayer Play Mode players). Scenes that are not in the
-    /// build list (test scenes like UIKitTest) start by themselves.
+    /// build list (test scenes) start by themselves.
     /// </summary>
     [InitializeOnLoad]
     internal static class BootstrapPlayModeStart
