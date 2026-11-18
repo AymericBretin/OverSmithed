@@ -9,7 +9,7 @@ using UnityEngine.UI;
 namespace OverSmithed.WorldMap
 {
     /// <summary>
-    /// Temporary world map (FLOW-1), until the real map and its walker (FLOW-3, FLOW-4).
+    /// Temporary world map UI (FLOW-1), until entering a level from its spot (FLOW-5). The walker is MapWalker (FLOW-4).
     /// On the host, any of its local players presses Interact to take everyone to the level.
     /// Clients just wait. The button leaves the game (host: closes it for everyone).
     /// </summary>
@@ -33,8 +33,8 @@ namespace OverSmithed.WorldMap
             _isHost = networkManager != null && networkManager.IsServer;
 
             _hintText.text = _isHost
-                ? "Press Interact to start the level."
-                : "Waiting for the host to start the level...";
+                ? "Move to walk. Press Interact to start the level."
+                : "The host walks on the map and starts the level...";
 
             _leaveLabel = _leaveButton.GetComponentInChildren<TMP_Text>();
             if (_leaveLabel != null)

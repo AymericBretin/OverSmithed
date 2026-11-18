@@ -11,6 +11,19 @@ namespace OverSmithed.Core
     /// </summary>
     public class SceneFlow : MonoBehaviour
     {
+        /// <summary>
+        /// Host only: the level scene started last in this session (null before the first level). The world map
+        /// walker starts on its spot when the players come back to the map.
+        /// </summary>
+        public static string LastLevelScene { get; private set; }
+
+        // Domain reload is off: forget it when Play Mode starts.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            LastLevelScene = null;
+        }
+
         private void Start()
         {
             var networkManager = NetworkManager.Singleton;
@@ -31,6 +44,7 @@ namespace OverSmithed.Core
 
         private void HandleServerStarted()
         {
+            LastLevelScene = null;
             LoadNetworkScene(SceneNames.Lobby);
         }
 
@@ -51,7 +65,12 @@ namespace OverSmithed.Core
         /// <summary>Host only: takes everyone to a level scene.</summary>
         public static bool StartLevel(string sceneName)
         {
-            return LoadNetworkScene(sceneName);
+            if (!LoadNetworkScene(sceneName))
+            {
+                return false;
+            }
+            LastLevelScene = sceneName;
+            return true;
         }
 
         /// <summary>Server only: loads a scene on every connected machine.</summary>
