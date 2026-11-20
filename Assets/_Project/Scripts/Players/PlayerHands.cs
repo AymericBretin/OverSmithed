@@ -40,6 +40,9 @@ namespace OverSmithed.Players
         [SerializeField] private float _throwUpSpeed = 2.5f;
         [Tooltip("Part of the player's speed the thrown item keeps (running throws go further).")]
         [SerializeField] private float _throwMomentum = 0.5f;
+        [Header("Catch")]
+        [Tooltip("A flying item is caught only while it is inside this angle in front of the player (degrees).")]
+        [SerializeField] [Range(0f, 180f)] private float _catchAngle = 70f;
 
         private readonly NetworkVariable<NetworkObjectReference> _heldItem = new(NoItem);
 
@@ -141,7 +144,7 @@ namespace OverSmithed.Players
         /// </summary>
         public bool TryDrop(Vector3 playerVelocity = default)
         {
-            return ReleaseInFront(playerVelocity * _dropMomentum + transform.forward * _dropForwardSpeed);
+            return ReleaseInFront(playerVelocity * _dropMomentum + transform.forward * _dropForwardSpeed, thrown: false);
         }
 
         // Sent by the owner machine, run on the host.
@@ -161,7 +164,7 @@ namespace OverSmithed.Players
         {
             var velocity = transform.forward * _throwForwardSpeed + Vector3.up * _throwUpSpeed
                            + playerVelocity * _throwMomentum;
-            if (!ReleaseInFront(velocity))
+            if (!ReleaseInFront(velocity, thrown: true))
             {
                 return false;
             }
@@ -177,7 +180,7 @@ namespace OverSmithed.Players
         }
 
         // Host: the carried item leaves the hands in front of the player (never inside a wall) and starts moving.
-        private bool ReleaseInFront(Vector3 velocity)
+        private bool ReleaseInFront(Vector3 velocity, bool thrown)
         {
             var item = IsServer && IsSpawned ? HeldItem : null;
             if (item == null)
@@ -198,7 +201,7 @@ namespace OverSmithed.Players
             var dropRotation = item.transform.rotation;
             Release(item);
             item.transform.SetPositionAndRotation(dropPosition, dropRotation);
-            item.StartPhysics(velocity);
+            item.StartPhysics(velocity, thrown, thrown ? this : null);
             return true;
         }
 
@@ -280,6 +283,33 @@ namespace OverSmithed.Players
                 return Hold(freeItem);
             }
             return false;
+        }
+
+        /// <summary>
+        /// Host only: catches a thrown item that touched this player. The collision itself proves the item is in
+        /// reach; a player carrying something or unable to act cannot catch it.
+        /// </summary>
+        public bool TryCatch(NetworkItem item)
+        {
+            if (!IsServer || !IsSpawned || !_player.CanAct || IsHolding || item == null || !item.IsSpawned
+                || !item.CanBeCaughtBy(this) || !item.HasPhysics || !IsFacing(item.transform.position))
+            {
+                return false;
+            }
+            return Hold(item);
+        }
+
+        private bool IsFacing(Vector3 position)
+        {
+            var toItem = position - transform.position;
+            toItem.y = 0f;
+            if (toItem.sqrMagnitude < 0.0001f)
+            {
+                return true;
+            }
+            var forward = transform.forward;
+            forward.y = 0f;
+            return Vector3.Angle(forward, toItem) <= _catchAngle;
         }
 
         private bool IsInReach(NetworkObject target)

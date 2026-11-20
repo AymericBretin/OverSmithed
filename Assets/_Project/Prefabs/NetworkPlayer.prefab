@@ -290,6 +290,7 @@ MonoBehaviour:
   _throwForwardSpeed: 9
   _throwUpSpeed: 2.5
   _throwMomentum: 0.5
+  _catchAngle: 70
 --- !u!114 &3662721793658422320
 MonoBehaviour:
   m_ObjectHideFlags: 0
