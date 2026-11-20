@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using OverSmithed.Core;
+using OverSmithed.Levels;
 using OverSmithed.Networking;
 using Unity.Netcode;
 using UnityEngine;
@@ -53,8 +55,20 @@ namespace OverSmithed.Players
         /// <summary>True while this player fell off the map and waits to come back (see <see cref="PlayerFall"/>).</summary>
         public bool IsOut => Fall != null && Fall.IsOut;
 
-        /// <summary>The player may move and use their hands: allowed by the host and not out after a fall.</summary>
-        public bool CanAct => CanMove && !IsOut;
+        /// <summary>
+        /// The player may move and use their hands: allowed by the host, not out after a fall, and the level's shift is
+        /// playing (not during the 3-2-1 countdown or after the end).
+        /// </summary>
+        public bool CanAct => CanActIgnoringPause && !IsPausedHere;
+
+        /// <summary><see cref="CanAct"/> without the pause menu.</summary>
+        public bool CanActIgnoringPause => CanMove && !IsOut && ShiftTimer.AllowsPlayerActions;
+
+        /// <summary>
+        /// This machine owns the player and its pause menu is open. Only the owner stops: online, the host keeps
+        /// accepting the other machines' actions while its own pause menu is open.
+        /// </summary>
+        public bool IsPausedHere => IsOwner && GamePause.BlocksPlayerInput;
 
         private PlayerFall _fall;
         private PlayerFall Fall => _fall != null ? _fall : _fall = GetComponent<PlayerFall>();

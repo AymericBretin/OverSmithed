@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using OverSmithed.Core;
 using OverSmithed.Networking;
 using OverSmithed.Players;
 using TMPro;
@@ -68,6 +69,19 @@ namespace OverSmithed.UI
         private float _toastLeft;
         private float _copiedLeft;
         private string _controlsKey;
+
+        private void Awake()
+        {
+            // Own copy with the keys chosen in the controls screen, so the hints show the real keys.
+            _actions = Instantiate(_actions);
+            ControlBindings.Register(_actions);
+        }
+
+        private void OnDestroy()
+        {
+            ControlBindings.Unregister(_actions);
+            Destroy(_actions);
+        }
 
         private void OnEnable()
         {

@@ -1,6 +1,6 @@
 {
   "name": "OverSmithed.ThrowTests",
-  "references": ["OverSmithed.Runtime", "Unity.Netcode.Runtime", "Unity.Collections"],
+  "references": ["OverSmithed.Runtime", "Unity.Netcode.Runtime", "Unity.Collections", "Unity.Networking.Transport"],
   "includePlatforms": ["Editor"],
   "optionalUnityReferences": ["TestAssemblies"]
 }

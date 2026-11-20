@@ -37,6 +37,8 @@ namespace OverSmithed.UI
         [Header("Settings and credits panels")]
         [Tooltip("The SettingsPanel prefab (also used by the pause menu).")]
         [SerializeField] private SettingsScreen _settingsScreen;
+        [Tooltip("The ControlsPanel prefab, opened from the settings panel's Controls button.")]
+        [SerializeField] private ControlsScreen _controlsScreen;
         [SerializeField] private GameObject _creditsPanel;
         [SerializeField] private Button _creditsBackButton;
 
@@ -60,10 +62,14 @@ namespace OverSmithed.UI
             _codeField.onSubmit.AddListener(_ => JoinWithCode());
             _joinBackButton.onClick.AddListener(ClosePanel);
             _settingsScreen.BackButton.onClick.AddListener(ClosePanel);
+            _settingsScreen.ControlsButton.onClick.AddListener(() =>
+                OpenPanel(_controlsScreen.gameObject, _settingsButton, _controlsScreen.FirstSelectable.gameObject));
+            _controlsScreen.BackButton.onClick.AddListener(BackToSettings);
             _creditsBackButton.onClick.AddListener(ClosePanel);
 
             _joinPanel.SetActive(false);
             _settingsScreen.gameObject.SetActive(false);
+            _controlsScreen.gameObject.SetActive(false);
             _creditsPanel.SetActive(false);
             _keepSelection.DefaultSelection = _playLocalButton.gameObject;
         }
@@ -91,8 +97,18 @@ namespace OverSmithed.UI
         private void Update()
         {
             // Back: Escape / gamepad East (the UI "Cancel" action), while a panel is open and nothing is running.
-            // An open dropdown list takes the Cancel for itself (it closes the list, not the panel).
-            if (_openPanel != null && !_busy && !_settingsScreen.IsDropdownOpen && CancelPressed())
+            // An open dropdown list takes the Cancel for itself (it closes the list, not the panel), and so does the
+            // controls panel while it waits for a new key (Escape cancels the wait, B can be the new key).
+            if (_openPanel == null || _busy || _settingsScreen.IsDropdownOpen || _controlsScreen.IsListening ||
+                !CancelPressed())
+            {
+                return;
+            }
+            if (_openPanel == _controlsScreen.gameObject)
+            {
+                BackToSettings();
+            }
+            else
             {
                 ClosePanel();
             }
@@ -136,6 +152,13 @@ namespace OverSmithed.UI
             {
                 _keepSelection.Select(openedBy.gameObject);
             }
+        }
+
+        // The controls panel goes back to the settings panel, with its Controls button selected. The settings panel's
+        // Back still goes back to the Settings button of the column.
+        private void BackToSettings()
+        {
+            OpenPanel(_settingsScreen.gameObject, _settingsButton, _settingsScreen.ControlsButton.gameObject);
         }
 
         private void ClosePanelSilently()

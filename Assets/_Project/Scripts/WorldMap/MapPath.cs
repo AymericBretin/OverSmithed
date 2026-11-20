@@ -6,8 +6,8 @@ namespace OverSmithed.WorldMap
     /// <summary>
     /// A winding path between two level spots, drawn as a line of stepping stones (like the dotted paths of
     /// Mario world maps). Editing tool only: move the bend points (children of "Bends"), then right-click the
-    /// component > "Rebuild Stones" to place the stones again along a smooth curve. The stones are saved in the
-    /// scene; nothing runs in game.
+    /// component > "Rebuild Stones" to place the stones again along a smooth curve (none in the skip areas, e.g. on
+    /// water where a bridge crosses). The stones are saved in the scene; nothing runs in game.
     /// </summary>
     public class MapPath : MonoBehaviour
     {
@@ -20,6 +20,10 @@ namespace OverSmithed.WorldMap
         [SerializeField] private Transform _stones;
         [Tooltip("Distance (m) between two stones, along the path.")]
         [SerializeField, Min(0.2f)] private float _spacing = 0.9f;
+        [Tooltip("No stone inside these areas (water: a bridge crosses it instead)...")]
+        [SerializeField] private List<MapShape> _skipAreas = new();
+        [Tooltip("...except inside these ones (an island in the lake).")]
+        [SerializeField] private List<MapShape> _keepAreas = new();
 
         // Curve through the spot centers and the bends (Catmull-Rom), as a list of points close together.
         private List<Vector3> SampleCurve()
@@ -97,7 +101,7 @@ namespace OverSmithed.WorldMap
                 while (nextStone <= travelled + length)
                 {
                     var point = Vector3.Lerp(a, b, (nextStone - travelled) / Mathf.Max(length, 0.0001f));
-                    if (!_from.Contains(point) && !_to.Contains(point))
+                    if (!_from.Contains(point) && !_to.Contains(point) && !IsSkipped(point))
                     {
                         var stone = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(_stonePrefab, _stones);
                         stone.transform.SetPositionAndRotation(point, Quaternion.LookRotation(b - a));
@@ -108,6 +112,25 @@ namespace OverSmithed.WorldMap
                 travelled += length;
             }
             UnityEditor.EditorUtility.SetDirty(gameObject);
+        }
+
+        private bool IsSkipped(Vector3 point)
+        {
+            foreach (var keep in _keepAreas)
+            {
+                if (keep != null && keep.Contains(point))
+                {
+                    return false;
+                }
+            }
+            foreach (var skip in _skipAreas)
+            {
+                if (skip != null && skip.Contains(point))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void OnDrawGizmos()

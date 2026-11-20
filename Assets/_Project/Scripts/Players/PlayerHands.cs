@@ -118,6 +118,11 @@ namespace OverSmithed.Players
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         private void DropRpc(Vector3 playerVelocity)
         {
+            // The host checks the rule too: a request sent just before the shift ended may arrive after it.
+            if (!_player.CanAct)
+            {
+                return;
+            }
             // Never trust a speed sent by a client blindly: at most the top speed.
             var maxSpeed = _movement != null ? _movement.MaxSpeed : 0f;
             TryDrop(Vector3.ClampMagnitude(new Vector3(playerVelocity.x, 0f, playerVelocity.z), maxSpeed));
@@ -151,6 +156,10 @@ namespace OverSmithed.Players
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         private void ThrowRpc(Vector3 playerVelocity)
         {
+            if (!_player.CanAct)
+            {
+                return;
+            }
             // Never trust a speed sent by a client blindly: at most the top speed.
             var maxSpeed = _movement != null ? _movement.MaxSpeed : 0f;
             TryThrow(Vector3.ClampMagnitude(new Vector3(playerVelocity.x, 0f, playerVelocity.z), maxSpeed));
@@ -209,6 +218,10 @@ namespace OverSmithed.Players
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         private void InteractRpc(NetworkObjectReference target)
         {
+            if (!_player.CanAct)
+            {
+                return;
+            }
             // The target may be gone by the time the request arrives (despawned): nothing to do.
             if (target.TryGet(out var networkObject))
             {
