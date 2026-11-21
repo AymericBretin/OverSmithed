@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using OverSmithed.Core;
 using OverSmithed.Networking;
 using OverSmithed.Players;
@@ -15,6 +17,9 @@ namespace OverSmithed.WorldMap
     /// the position to the clients, who only watch. It looks like the leader (first player of the host): only the skin
     /// index travels on the network, every machine creates the same visual and animates it from the speed it sees.
     /// It starts on the spot of the last level played (else level 1).
+    /// Every machine knows which level spot it stands on (<see cref="CurrentNode"/>, from the position it sees). On
+    /// the host, Interact on a built level (<see cref="TryEnterLevel"/>) tells everyone (<see cref="LevelLaunching"/>:
+    /// jump, burst, fade), walks it to the center of the circle, then loads the level for everyone (FLOW-5).
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class MapWalker : NetworkBehaviour
@@ -38,6 +43,12 @@ namespace OverSmithed.WorldMap
         [Header("Animation (every machine)")]
         [SerializeField] private float _animationDamp = 0.1f;
 
+        [Header("Entering a level (host)")]
+        [Tooltip("Seconds between Interact and the level load (time for the jump, the burst and the fade).")]
+        [SerializeField, Min(0f)] private float _launchDelay = 1.1f;
+        [Tooltip("Speed (m/s) at which the walker goes to the center of the circle after Interact.")]
+        [SerializeField, Min(0.1f)] private float _centerSpeed = 3f;
+
         private readonly NetworkVariable<byte> _skinIndex = new();
         private CharacterController _controller;
         private Vector3 _velocity;
@@ -46,17 +57,43 @@ namespace OverSmithed.WorldMap
         private Animator _animator;
         private int _visualSkin = -1;
         private Vector3 _lastPosition;
+        private LevelNode _launchNode;
 
         /// <summary>The walker of the loaded world map (null when there is none).</summary>
         public static MapWalker Current { get; private set; }
 
+        /// <summary>
+        /// Every machine: a level is starting from this spot (jump, burst, fade). Raised once per launch, before the
+        /// host loads the level. Null = the start failed and was cancelled (undo the fade).
+        /// </summary>
+        public static event Action<LevelNode> LevelLaunching;
+
+        /// <summary>Every machine: the walker arrived on a spot or left it (null = no spot).</summary>
+        public event Action<LevelNode> NodeChanged;
+
+        /// <summary>Every machine: the level spot the walker stands on (from the position this machine sees), or null.</summary>
+        public LevelNode CurrentNode { get; private set; }
+
+        /// <summary>Every machine: a level is starting (the walker no longer moves).</summary>
+        public bool IsLaunching => _launchNode != null;
+
         /// <summary>Host only: horizontal speed of the last move.</summary>
         public Vector3 Velocity => _velocity;
+
+        /// <summary>Top walking speed (m/s).</summary>
+        public float MaxSpeed => _speed;
+
+        /// <summary>Scale of the skin visual root (the visual motion keeps it).</summary>
+        public float VisualScale => _visualScale;
+
+        /// <summary>The skins (followers use the same ones).</summary>
+        public SkinLibrary Skins => _skins;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             Current = null;
+            LevelLaunching = null;
         }
 
         private void Awake()
@@ -98,15 +135,105 @@ namespace OverSmithed.WorldMap
 
         private void Update()
         {
-            if (IsSpawned && IsServer)
+            if (!IsSpawned || !IsServer)
             {
-                Move(ReadHostInput(), Time.deltaTime);
+                return;
             }
+            if (_launchNode != null)
+            {
+                MoveToCenter(_launchNode, Time.deltaTime);
+                return;
+            }
+            // The pause menu of this machine is open (or was just closed by this press): the players don't walk.
+            var input = GamePause.BlocksPlayerInput ? Vector2.zero : ReadHostInput();
+            Move(input, Time.deltaTime);
         }
 
         private void LateUpdate()
         {
+            RefreshCurrentNode();
             Animate(Time.deltaTime);
+        }
+
+        private void RefreshCurrentNode()
+        {
+            var node = LevelNode.FindAt(transform.position);
+            if (node == CurrentNode)
+            {
+                return;
+            }
+            CurrentNode = node;
+            NodeChanged?.Invoke(node);
+        }
+
+        // ---------- Entering a level ----------
+
+        /// <summary>
+        /// Host only: starts the level of the spot the walker stands on, for everyone. False (nothing happens) away
+        /// from a spot, on a level that is not built yet, or when a level is already starting.
+        /// </summary>
+        public bool TryEnterLevel()
+        {
+            if (!IsSpawned || !IsServer || _launchNode != null)
+            {
+                return false;
+            }
+            var node = LevelNode.FindAt(transform.position);
+            if (node == null || !node.HasLevel)
+            {
+                return false;
+            }
+            // Only the level number travels: every machine has the same map, so it finds the same spot.
+            LevelLaunchingRpc(node.LevelNumber);
+            StartCoroutine(LoadLevelAfterDelay(node));
+            return true;
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void LevelLaunchingRpc(int levelNumber)
+        {
+            var node = LevelNode.FindByNumber(levelNumber);
+            if (node == null)
+            {
+                Debug.LogWarning($"[MapWalker] No level spot number {levelNumber} on this map.", this);
+                return;
+            }
+            _launchNode = node;
+            LevelLaunching?.Invoke(node);
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void LevelLaunchCancelledRpc()
+        {
+            _launchNode = null;
+            LevelLaunching?.Invoke(null);
+        }
+
+        private IEnumerator LoadLevelAfterDelay(LevelNode node)
+        {
+            _velocity = Vector3.zero;
+            // Scaled time: a local pause opened meanwhile also holds the load (a scene must not load with time stopped).
+            yield return new WaitForSeconds(_launchDelay);
+            if (!SceneFlow.StartLevel(node.SceneName))
+            {
+                Debug.LogWarning($"[MapWalker] Could not start {node.SceneName}.", this);
+                LevelLaunchCancelledRpc();
+            }
+        }
+
+        // While the level starts: walk to the center of the circle and turn toward the camera.
+        private void MoveToCenter(LevelNode node, float deltaTime)
+        {
+            if (!_controller.enabled || deltaTime <= 0f)
+            {
+                return;
+            }
+            var offset = node.transform.position - transform.position;
+            offset.y = 0f;
+            var step = Vector3.ClampMagnitude(offset, _centerSpeed * deltaTime);
+            _controller.Move(step + Vector3.down * 2f * deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0f, 180f, 0f),
+                1f - Mathf.Exp(-_turnSharpness * deltaTime));
         }
 
         // ---------- Host: start spot, leader skin, movement ----------

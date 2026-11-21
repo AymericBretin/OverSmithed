@@ -19,12 +19,15 @@ namespace OverSmithed.UI
     /// A local game is paused (time stops); online the game keeps running for the others and only this machine's
     /// players stop (<see cref="GamePause"/>). Every device of this machine can use the menu.
     /// Pause / Cancel (Escape, Start, gamepad East) go back one step: sub-panel → list → closed.
+    /// Also used on the world map (<see cref="_inLevel"/> off): no Back to map, and the quit text talks about the map.
     /// </summary>
     public class PauseMenuScreen : MonoBehaviour
     {
         [Tooltip("Everything shown while the menu is open (shade + panels). Hidden when closed.")]
         [SerializeField] private GameObject _content;
         [SerializeField] private KeepSelection _keepSelection;
+        [Tooltip("On in a level. Off on the world map: Back to map is hidden and the quit text changes.")]
+        [SerializeField] private bool _inLevel = true;
 
         [Header("Pause list")]
         [SerializeField] private GameObject _listPanel;
@@ -125,10 +128,10 @@ namespace OverSmithed.UI
             GamePause.Open(stopTime: isLocal);
 
             var isHost = NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost;
-            _backToMapButton.gameObject.SetActive(isHost);
+            _backToMapButton.gameObject.SetActive(isHost && _inLevel);
             _onlineNote.SetActive(!isLocal);
             _confirmText.text = isLocal
-                ? "The progress of this level will be lost."
+                ? _inLevel ? "The progress of this level will be lost." : "You will go back to the main menu."
                 : isHost
                     ? "This ends the game for every player."
                     : "You will leave this online game.";
