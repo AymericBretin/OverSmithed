@@ -44,6 +44,8 @@ GameObject:
   - component: {fileID: 8610261797523552998}
   - component: {fileID: 1292835059790295356}
   - component: {fileID: 200338802500576096}
+  - component: {fileID: 3401357897965843340}
+  - component: {fileID: 2622368118955964052}
   m_Layer: 0
   m_Name: MapWalker
   m_TagString: Untagged
@@ -65,6 +67,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3248323222917986083}
+  - {fileID: 6568725590523856702}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &47606719820835475
@@ -187,3 +190,128 @@ MonoBehaviour:
   _turnSharpness: 15
   _gravity: 30
   _animationDamp: 0.1
+  _launchDelay: 1.1
+  _centerSpeed: 3
+--- !u!114 &3401357897965843340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6344969499548553688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4002e76cefd00402996e21176b9f7ae7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.WorldMap.MapWalkerMotion
+  _visual: {fileID: 3248323222917986083}
+  _maxSpeed: 5
+  _visualScale: 0.6
+  _leanPerSpeedChange: 2.5
+  _walkLean: 6
+  _maxLean: 15
+  _bankPerTurn: 3
+  _maxBank: 12
+  _leanSmoothing: 0.08
+  _hopHeight: 0.06
+  _stepLength: 0.7
+  _dust: {fileID: 7418745333783356914}
+  _dustPerStep: 2
+  _dustBurst: 8
+  _stopSquash: 0.12
+  _startStretch: 0.08
+  _springStiffness: 260
+  _springDamping: 11
+  _jumpDelay: 0.2
+  _jumpHeight: 0.9
+  _jumpTime: 0.5
+  _jumpSpins: 1
+  _jumpSquash: 0.2
+--- !u!114 &2622368118955964052
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6344969499548553688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c68244d9cfbec4887a1fa2bbc0ce7e8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.WorldMap.MapFollowers
+  _followerPrefab: {fileID: 7140325440050864717, guid: 611ff741f8c5940f3aaef02ce4a6762b, type: 3}
+  _spacing: 1.1
+  _pointStep: 0.1
+  _jumpStagger: 0.12
+  _teleportDistance: 3
+  _blockers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _checkRadius: 0.3
+--- !u!1001 &642737808014160994
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6197741541100041225}
+    m_Modifications:
+    - target: {fileID: 2634415905947841661, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_Name
+      value: Dust
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+--- !u!4 &6568725590523856702 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+  m_PrefabInstance: {fileID: 642737808014160994}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &7418745333783356914 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 7935302078952100240, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+  m_PrefabInstance: {fileID: 642737808014160994}
+  m_PrefabAsset: {fileID: 0}
