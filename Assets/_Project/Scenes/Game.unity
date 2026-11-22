@@ -6223,6 +6223,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2847393694184910995, guid: cb5fffea212044433b8da93b65968ec4, type: 3}
+      propertyPath: m_InScenePlaced
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2847393694184910995, guid: cb5fffea212044433b8da93b65968ec4, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 3570940628
+      objectReference: {fileID: 0}
+    - target: {fileID: 2847393694184910995, guid: cb5fffea212044433b8da93b65968ec4, type: 3}
+      propertyPath: SceneMigrationSynchronization
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2847393694184910995, guid: cb5fffea212044433b8da93b65968ec4, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 335646593
+      objectReference: {fileID: 0}
     - target: {fileID: 2877544475355840767, guid: cb5fffea212044433b8da93b65968ec4, type: 3}
       propertyPath: m_Name
       value: TrashBin
