@@ -242,7 +242,18 @@ namespace OverSmithed.Players
 
             if (target.TryGetComponent<TrashBin>(out var trashBin))
             {
-                return held != null && trashBin.TryDiscard(held);
+                if (held == null)
+                {
+                    return false;
+                }
+                // A special item (with a home counter, like the water bucket) is never destroyed: like after a
+                // fall, it goes back on its counter with a poof.
+                if (held.Home != null)
+                {
+                    LoseHeldItem();
+                    return true;
+                }
+                return trashBin.TryDiscard(held);
             }
 
             if (target.TryGetComponent<Counter>(out var counter))
