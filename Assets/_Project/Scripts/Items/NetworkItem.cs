@@ -1,6 +1,7 @@
 using OverSmithed.Core;
 using OverSmithed.Counters;
 using OverSmithed.Interaction;
+using OverSmithed.Players;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
@@ -35,6 +36,8 @@ namespace OverSmithed.Items
         private ItemDefinition _pendingDefinition;
         private GameObject _visual;
         private int _visualItemId = ItemDefinition.NoneId;
+        private bool _isThrown;
+        private PlayerHands _thrower;
 
         /// <summary>The item leaves the network (destroyed, end of level). For example a counter holding it becomes empty.</summary>
         public event System.Action<NetworkItem> Despawned;
@@ -57,11 +60,17 @@ namespace OverSmithed.Items
         /// <summary>Host: the item is free and moved by physics (on the floor, sliding).</summary>
         public bool HasPhysics => _body != null && !_body.isKinematic;
 
+        /// <summary>Host: current flight velocity, used to face an incoming item even at point-blank range.</summary>
+        public Vector3 Velocity => HasPhysics ? _body.linearVelocity : Vector3.zero;
+
+        /// <summary>Host: this free item came from a throw and can be caught by an empty-handed player.</summary>
+        public bool IsThrown => _isThrown;
+
         /// <summary>
         /// Host only: the item becomes free: it falls and slides from where it is, starting at
         /// <paramref name="velocity"/>. Call it after the item left any hands or counter.
         /// </summary>
-        public void StartPhysics(Vector3 velocity)
+        public void StartPhysics(Vector3 velocity, bool thrown = false, PlayerHands thrower = null)
         {
             if (!IsServer || _body == null)
             {
@@ -75,12 +84,20 @@ namespace OverSmithed.Items
             _body.linearVelocity = velocity;
             _body.angularVelocity = Vector3.zero;
             _body.WakeUp();
+            _isThrown = thrown;
+            _thrower = thrown ? thrower : null;
         }
 
         /// <summary>Host only: the item stops moving by itself (it goes in hands or on a counter).</summary>
         public void StopPhysics()
         {
-            if (!IsServer || _body == null || _body.isKinematic)
+            if (!IsServer)
+            {
+                return;
+            }
+            _isThrown = false;
+            _thrower = null;
+            if (_body == null || _body.isKinematic)
             {
                 return;
             }
@@ -166,6 +183,145 @@ namespace OverSmithed.Items
             {
                 FellOff();
             }
+        }
+
+        private void FixedUpdate()
+        {
+            if (!IsServer || !IsSpawned || !_isThrown || !HasPhysics || _collider == null)
+            {
+                return;
+            }
+
+            // Player/Item collisions are disabled in the project (carried items must not block movement).
+            // Explicit queries still see players. Sweep the real item box over the next physics step so fast
+            // throws cannot skip a receiver; stop at walls/counters before considering a player behind them.
+            var center = _body.position + _body.rotation * Vector3.Scale(_collider.center, transform.lossyScale);
+            var halfSize = Vector3.Scale(_collider.size * 0.5f, transform.lossyScale);
+            foreach (var contact in Physics.OverlapBox(center, halfSize, _body.rotation, ~0,
+                         QueryTriggerInteraction.Ignore))
+            {
+                var hands = contact.GetComponentInParent<PlayerHands>();
+                if (hands != null && CanBeCaughtBy(hands) && hands.TryCatch(this))
+                {
+                    return;
+                }
+            }
+
+            var travel = _body.linearVelocity * Time.fixedDeltaTime
+                         + Physics.gravity * (0.5f * Time.fixedDeltaTime * Time.fixedDeltaTime);
+            if (travel.sqrMagnitude < 0.000001f)
+            {
+                return;
+            }
+            var hits = Physics.BoxCastAll(center, halfSize, travel.normalized, _body.rotation, travel.magnitude,
+                ~0, QueryTriggerInteraction.Ignore);
+            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+            foreach (var hit in hits)
+            {
+                if (hit.collider == _collider || hit.collider.GetComponentInParent<NetworkItem>() != null)
+                {
+                    continue;
+                }
+                var hands = hit.collider.GetComponentInParent<PlayerHands>();
+                if (hands != null)
+                {
+                    if (CanBeCaughtBy(hands) && hands.TryCatch(this))
+                    {
+                        return;
+                    }
+                    continue;
+                }
+                var counter = hit.collider.GetComponentInParent<Counter>();
+                if (counter != null && travel.y <= 0f && hit.normal.y > 0.5f)
+                {
+                    counter.TryPlace(this);
+                    return;
+                }
+                // Ordinary physics resolves the first solid surface.
+                return;
+            }
+        }
+
+        /// <summary>Host: only an incoming throw can be caught, never the thrower's own outgoing item.</summary>
+        public bool CanBeCaughtBy(PlayerHands hands)
+        {
+            if (!_isThrown || hands == null || hands == _thrower || _body == null)
+            {
+                return false;
+            }
+            // Player/item collisions are disabled. Without this check an item rejected from behind could
+            // pass through the player, enter their facing cone, and be caught while flying away from them.
+            var toPlayer = hands.transform.position - _body.position;
+            toPlayer.y = 0f;
+            var velocity = _body.linearVelocity;
+            velocity.y = 0f;
+            return velocity.sqrMagnitude < 0.0001f || Vector3.Dot(toPlayer, velocity) >= 0f;
+        }
+
+        // A contact further than this (m) is only "speculative": with ContinuousSpeculative collision detection the
+        // physics reports surfaces the item MAY touch during the next step, before it really does. A throw that
+        // starts 10 cm above the counter in front of the player got such a contact and was placed on that counter.
+        private const float TouchDistance = 0.02f;
+
+        // The host simulates free items, so it is also the only machine that decides where one lands. A dropped
+        // item stays a normal free item: walking over it never picks it up.
+        private void OnCollisionEnter(Collision collision) => HandleContact(collision);
+
+        // A speculative contact (ignored in Enter) does not call Enter again when it becomes a real one: Stay does.
+        private void OnCollisionStay(Collision collision) => HandleContact(collision);
+
+        private void HandleContact(Collision collision)
+        {
+            if (!IsServer || !IsSpawned || !HasPhysics || !Touches(collision, topOnly: false))
+            {
+                return;
+            }
+
+            // A free item that lands on top of an empty counter stays there: a throw, but also an item that hit a
+            // wall or another item first and then fell on a counter (it must not lie loose on top of it).
+            // Contact normals are from the counter surface, unlike Rigidbody.velocity which may already have been
+            // changed by the collision solver. Hitting a counter's side or underside still bounces.
+            var counter = collision.collider.GetComponentInParent<Counter>();
+            if (counter != null && counter.IsSpawned && counter.IsEmpty && Touches(collision, topOnly: true)
+                && counter.TryPlace(this))
+            {
+                return;
+            }
+
+            if (!_isThrown)
+            {
+                return;
+            }
+
+            var hands = collision.collider.GetComponentInParent<PlayerHands>();
+            if (hands != null && hands == _thrower)
+            {
+                return;
+            }
+            if (hands != null && hands.TryCatch(this))
+            {
+                return;
+            }
+
+            // It is no longer flying after hitting a wall, the ground, a full counter, or a player who cannot
+            // catch it. It can still be picked up normally with Interact.
+            _isThrown = false;
+            _thrower = null;
+        }
+
+        // True if the item really touches the other collider (not a speculative contact). topOnly: only contacts on
+        // an upward surface count (the top of a counter, not its side).
+        private static bool Touches(Collision collision, bool topOnly)
+        {
+            for (var i = 0; i < collision.contactCount; i++)
+            {
+                var contact = collision.GetContact(i);
+                if (contact.separation <= TouchDistance && (!topOnly || contact.normal.y > 0.5f))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
