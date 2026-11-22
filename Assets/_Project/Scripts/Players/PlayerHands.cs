@@ -228,7 +228,8 @@ namespace OverSmithed.Players
 
         /// <summary>
         /// Host only: what Interact does with <paramref name="target"/>. Empty hands: take the item on a counter,
-        /// a new item from a crate, or a free item. Full hands: put the item on an empty counter.
+        /// a new item from a crate, or a free item. Full hands: put the item on an empty counter or discard it in
+        /// a trash bin.
         /// Returns false if nothing happened.
         /// </summary>
         public bool TryInteract(NetworkObject target)
@@ -238,6 +239,11 @@ namespace OverSmithed.Players
                 return false;
             }
             var held = HeldItem;
+
+            if (target.TryGetComponent<TrashBin>(out var trashBin))
+            {
+                return held != null && trashBin.TryDiscard(held);
+            }
 
             if (target.TryGetComponent<Counter>(out var counter))
             {

@@ -1,0 +1,6 @@
+{
+  "name": "OverSmithed.TrashBinTests",
+  "references": ["OverSmithed.Runtime", "Unity.Netcode.Runtime", "Unity.Collections", "Unity.Networking.Transport"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}
