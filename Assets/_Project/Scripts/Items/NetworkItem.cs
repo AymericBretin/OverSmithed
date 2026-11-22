@@ -60,6 +60,9 @@ namespace OverSmithed.Items
         /// <summary>Host: the item is free and moved by physics (on the floor, sliding).</summary>
         public bool HasPhysics => _body != null && !_body.isKinematic;
 
+        /// <summary>Host: current flight velocity, used to face an incoming item even at point-blank range.</summary>
+        public Vector3 Velocity => HasPhysics ? _body.linearVelocity : Vector3.zero;
+
         /// <summary>Host: this free item came from a throw and can be caught by an empty-handed player.</summary>
         public bool IsThrown => _isThrown;
 
@@ -88,7 +91,13 @@ namespace OverSmithed.Items
         /// <summary>Host only: the item stops moving by itself (it goes in hands or on a counter).</summary>
         public void StopPhysics()
         {
-            if (!IsServer || _body == null || _body.isKinematic)
+            if (!IsServer)
+            {
+                return;
+            }
+            _isThrown = false;
+            _thrower = null;
+            if (_body == null || _body.isKinematic)
             {
                 return;
             }
@@ -98,8 +107,6 @@ namespace OverSmithed.Items
             _body.isKinematic = true;
             // Interpolation would pull a carried item back toward its last physics pose: off while not free.
             _body.interpolation = RigidbodyInterpolation.None;
-            _isThrown = false;
-            _thrower = null;
         }
 
         /// <summary>
@@ -235,8 +242,21 @@ namespace OverSmithed.Items
             }
         }
 
-        /// <summary>Host: an outgoing throw cannot be caught again by its own thrower.</summary>
-        public bool CanBeCaughtBy(PlayerHands hands) => _isThrown && hands != null && hands != _thrower;
+        /// <summary>Host: only an incoming throw can be caught, never the thrower's own outgoing item.</summary>
+        public bool CanBeCaughtBy(PlayerHands hands)
+        {
+            if (!_isThrown || hands == null || hands == _thrower || _body == null)
+            {
+                return false;
+            }
+            // Player/item collisions are disabled. Without this check an item rejected from behind could
+            // pass through the player, enter their facing cone, and be caught while flying away from them.
+            var toPlayer = hands.transform.position - _body.position;
+            toPlayer.y = 0f;
+            var velocity = _body.linearVelocity;
+            velocity.y = 0f;
+            return velocity.sqrMagnitude < 0.0001f || Vector3.Dot(toPlayer, velocity) >= 0f;
+        }
 
         // The host simulates thrown items, so it is also the only machine that decides where one lands. A dropped
         // item stays a normal free item: walking over it never picks it up.
@@ -258,7 +278,7 @@ namespace OverSmithed.Items
             }
 
             var hands = collision.collider.GetComponentInParent<PlayerHands>();
-            if (hands != null && !CanBeCaughtBy(hands))
+            if (hands != null && hands == _thrower)
             {
                 return;
             }
@@ -270,6 +290,7 @@ namespace OverSmithed.Items
             // It is no longer flying after hitting a wall, the ground, a full counter, or a player who cannot
             // catch it. It can still be picked up normally with Interact.
             _isThrown = false;
+            _thrower = null;
         }
 
         private static bool HitCounterTop(Collision collision)

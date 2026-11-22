@@ -45,7 +45,8 @@ namespace OverSmithed.Counters
         public event Action<Counter> ItemChanged;
 
         /// <summary>The item on this counter, or null. Valid on every machine.</summary>
-        public NetworkItem Item => _item.Value.TryGet(out var networkObject) ? networkObject.GetComponent<NetworkItem>() : null;
+        public NetworkItem Item => _item.Value.TryGet(out var networkObject, NetworkManager)
+            ? networkObject.GetComponent<NetworkItem>() : null;
 
         public bool IsEmpty => Item == null;
 
@@ -173,7 +174,7 @@ namespace OverSmithed.Counters
 
         private void Resolve()
         {
-            var hasReference = _item.Value.TryGet(out var networkObject);
+            var hasReference = _item.Value.TryGet(out var networkObject, NetworkManager);
             var item = hasReference ? networkObject.GetComponent<NetworkItem>() : null;
             _needsResolve = !hasReference && !_item.Value.Equals(NoItem);
             SetAttached(item);

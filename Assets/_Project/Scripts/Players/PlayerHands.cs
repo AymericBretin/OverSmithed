@@ -58,7 +58,8 @@ namespace OverSmithed.Players
         public event System.Action Thrown;
 
         /// <summary>The carried item, or null. Valid on every machine.</summary>
-        public NetworkItem HeldItem => _heldItem.Value.TryGet(out var networkObject)
+        // Resolve against this peer, including when an integration test runs host and client in one process.
+        public NetworkItem HeldItem => _heldItem.Value.TryGet(out var networkObject, NetworkManager)
             ? networkObject.GetComponent<NetworkItem>() : null;
 
         public bool IsHolding => HeldItem != null;
@@ -305,17 +306,24 @@ namespace OverSmithed.Players
         public bool TryCatch(NetworkItem item)
         {
             if (!IsServer || !IsSpawned || !_player.CanAct || IsHolding || item == null || !item.IsSpawned
-                || !item.CanBeCaughtBy(this) || !item.HasPhysics || !IsFacing(item.transform.position))
+                || !item.CanBeCaughtBy(this) || !item.HasPhysics || !IsFacing(item.transform.position, item.Velocity))
             {
                 return false;
             }
             return Hold(item);
         }
 
-        private bool IsFacing(Vector3 position)
+        private bool IsFacing(Vector3 position, Vector3 incomingVelocity)
         {
             var toItem = position - transform.position;
             toItem.y = 0f;
+            // At the player's centre the position gives no reliable facing direction. Use the incoming
+            // trajectory instead: a throw passing through from behind must not become catchable here.
+            if (toItem.sqrMagnitude < 0.0001f)
+            {
+                toItem = -incomingVelocity;
+                toItem.y = 0f;
+            }
             if (toItem.sqrMagnitude < 0.0001f)
             {
                 return true;
