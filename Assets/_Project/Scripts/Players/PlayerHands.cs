@@ -40,6 +40,9 @@ namespace OverSmithed.Players
         [SerializeField] private float _throwUpSpeed = 2.5f;
         [Tooltip("Part of the player's speed the thrown item keeps (running throws go further).")]
         [SerializeField] private float _throwMomentum = 0.5f;
+        [Tooltip("Height (m, from the feet) of the bottom of a thrown item when it leaves the hands. Keep it above " +
+                 "the counters' top (0.8): from the hands (0.7) the item hit the edge of the counter in front.")]
+        [SerializeField] private float _throwHeight = 0.9f;
         [Header("Catch")]
         [Tooltip("A flying item is caught only while it is inside this angle in front of the player (degrees).")]
         [SerializeField] [Range(0f, 180f)] private float _catchAngle = 70f;
@@ -150,7 +153,8 @@ namespace OverSmithed.Players
         /// </summary>
         public bool TryDrop(Vector3 playerVelocity = default)
         {
-            return ReleaseInFront(playerVelocity * _dropMomentum + transform.forward * _dropForwardSpeed, thrown: false);
+            return ReleaseInFront(playerVelocity * _dropMomentum + transform.forward * _dropForwardSpeed,
+                _holdOffset.y, thrown: false);
         }
 
         // Sent by the owner machine, run on the host.
@@ -174,7 +178,7 @@ namespace OverSmithed.Players
         {
             var velocity = transform.forward * _throwForwardSpeed + Vector3.up * _throwUpSpeed
                            + playerVelocity * _throwMomentum;
-            if (!ReleaseInFront(velocity, thrown: true))
+            if (!ReleaseInFront(velocity, Mathf.Max(_holdOffset.y, _throwHeight), thrown: true))
             {
                 return false;
             }
@@ -190,7 +194,8 @@ namespace OverSmithed.Players
         }
 
         // Host: the carried item leaves the hands in front of the player (never inside a wall) and starts moving.
-        private bool ReleaseInFront(Vector3 velocity, bool thrown)
+        // height = where the item's bottom starts, from the player's feet.
+        private bool ReleaseInFront(Vector3 velocity, float height, bool thrown)
         {
             var item = IsServer && IsSpawned ? HeldItem : null;
             if (item == null)
@@ -200,8 +205,8 @@ namespace OverSmithed.Players
 
             // Facing a wall: the item starts against it, not inside it.
             var forward = transform.forward;
-            var start = transform.position + Vector3.up * _holdOffset.y;
-            var dropPosition = item.transform.position;
+            var start = transform.position + Vector3.up * height;
+            var dropPosition = transform.TransformPoint(new Vector3(_holdOffset.x, height, _holdOffset.z));
             if (Physics.SphereCast(start + Vector3.up * 0.15f, 0.15f, forward, out var hit, _holdOffset.z,
                     _dropBlockers, QueryTriggerInteraction.Ignore))
             {

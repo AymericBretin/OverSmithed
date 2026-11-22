@@ -258,21 +258,37 @@ namespace OverSmithed.Items
             return velocity.sqrMagnitude < 0.0001f || Vector3.Dot(toPlayer, velocity) >= 0f;
         }
 
-        // The host simulates thrown items, so it is also the only machine that decides where one lands. A dropped
+        // A contact further than this (m) is only "speculative": with ContinuousSpeculative collision detection the
+        // physics reports surfaces the item MAY touch during the next step, before it really does. A throw that
+        // starts 10 cm above the counter in front of the player got such a contact and was placed on that counter.
+        private const float TouchDistance = 0.02f;
+
+        // The host simulates free items, so it is also the only machine that decides where one lands. A dropped
         // item stays a normal free item: walking over it never picks it up.
-        private void OnCollisionEnter(Collision collision)
+        private void OnCollisionEnter(Collision collision) => HandleContact(collision);
+
+        // A speculative contact (ignored in Enter) does not call Enter again when it becomes a real one: Stay does.
+        private void OnCollisionStay(Collision collision) => HandleContact(collision);
+
+        private void HandleContact(Collision collision)
         {
-            if (!IsServer || !IsSpawned || !_isThrown || !HasPhysics)
+            if (!IsServer || !IsSpawned || !HasPhysics || !Touches(collision, topOnly: false))
             {
                 return;
             }
 
-            // A throw that lands on top of an empty counter stays there.  Contact normals are from the counter
-            // surface, unlike Rigidbody.velocity which may already have been changed by the collision solver.
-            // Hitting a counter's side or underside still bounces.
+            // A free item that lands on top of an empty counter stays there: a throw, but also an item that hit a
+            // wall or another item first and then fell on a counter (it must not lie loose on top of it).
+            // Contact normals are from the counter surface, unlike Rigidbody.velocity which may already have been
+            // changed by the collision solver. Hitting a counter's side or underside still bounces.
             var counter = collision.collider.GetComponentInParent<Counter>();
-            if (counter != null && counter.IsSpawned && counter.IsEmpty && HitCounterTop(collision)
+            if (counter != null && counter.IsSpawned && counter.IsEmpty && Touches(collision, topOnly: true)
                 && counter.TryPlace(this))
+            {
+                return;
+            }
+
+            if (!_isThrown)
             {
                 return;
             }
@@ -293,11 +309,14 @@ namespace OverSmithed.Items
             _thrower = null;
         }
 
-        private static bool HitCounterTop(Collision collision)
+        // True if the item really touches the other collider (not a speculative contact). topOnly: only contacts on
+        // an upward surface count (the top of a counter, not its side).
+        private static bool Touches(Collision collision, bool topOnly)
         {
             for (var i = 0; i < collision.contactCount; i++)
             {
-                if (collision.GetContact(i).normal.y > 0.5f)
+                var contact = collision.GetContact(i);
+                if (contact.separation <= TouchDistance && (!topOnly || contact.normal.y > 0.5f))
                 {
                     return true;
                 }
