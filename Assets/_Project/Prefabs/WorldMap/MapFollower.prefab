@@ -1,0 +1,185 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2616874466965050061
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5958511028396460709}
+  - component: {fileID: 6460272759235900827}
+  - component: {fileID: 7140325440050864717}
+  m_Layer: 0
+  m_Name: MapFollower
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5958511028396460709
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2616874466965050061}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 773121660211269085}
+  - {fileID: 4951170574385988131}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6460272759235900827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2616874466965050061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4002e76cefd00402996e21176b9f7ae7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.WorldMap.MapWalkerMotion
+  _visual: {fileID: 773121660211269085}
+  _maxSpeed: 5
+  _visualScale: 0.6
+  _leanPerSpeedChange: 2.5
+  _walkLean: 6
+  _maxLean: 15
+  _bankPerTurn: 3
+  _maxBank: 12
+  _leanSmoothing: 0.08
+  _hopHeight: 0.06
+  _stepLength: 0.7
+  _dust: {fileID: 8748937080503787759}
+  _dustPerStep: 2
+  _dustBurst: 8
+  _stopSquash: 0.12
+  _startStretch: 0.08
+  _springStiffness: 260
+  _springDamping: 11
+  _jumpDelay: 0.2
+  _jumpHeight: 0.9
+  _jumpTime: 0.5
+  _jumpSpins: 1
+  _jumpSquash: 0.2
+--- !u!114 &7140325440050864717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2616874466965050061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 704b6ff73aa6740989b260b576e3c57b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.WorldMap.MapFollower
+  _visualRoot: {fileID: 773121660211269085}
+  _animationDamp: 0.1
+  _turnSharpness: 15
+--- !u!1 &8669789335521016395
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 773121660211269085}
+  m_Layer: 0
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &773121660211269085
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8669789335521016395}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5958511028396460709}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1690447283640873343
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5958511028396460709}
+    m_Modifications:
+    - target: {fileID: 2634415905947841661, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_Name
+      value: Dust
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+--- !u!4 &4951170574385988131 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6035874353283134300, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+  m_PrefabInstance: {fileID: 1690447283640873343}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &8748937080503787759 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 7935302078952100240, guid: 70d7486fd7aaa4fc783370c3d51bff9e, type: 3}
+  m_PrefabInstance: {fileID: 1690447283640873343}
+  m_PrefabAsset: {fileID: 0}
