@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/_Project/Scenes/WorldMap.unity
     guid: a8a71f0c61d634b8c954e4b070ee5f0f
   - enabled: 1
+    path: Assets/_Project/Scenes/StoryIntro.unity
+    guid: a821e20d45d414b0aae47971e03f9dd6
+  - enabled: 1
     path: Assets/_Project/Scenes/Game.unity
     guid: 26ccd389507744aa4af861b34d8966ec
   - enabled: 1

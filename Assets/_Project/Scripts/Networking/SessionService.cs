@@ -200,7 +200,7 @@ namespace OverSmithed.Networking
 
         /// <summary>
         /// Host only: closes the lobby (nobody can join any more) and takes every machine to the world map,
-        /// or to <paramref name="firstScene"/> (the editor "Go To" menu uses it to jump to a level).
+        /// or to <paramref name="firstScene"/> (the story intro on a new save; the editor "Go To" menu jumps to a level).
         /// </summary>
         public bool LaunchGame(string firstScene = SceneNames.WorldMap)
         {
