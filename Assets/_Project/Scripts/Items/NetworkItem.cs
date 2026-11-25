@@ -195,9 +195,11 @@ namespace OverSmithed.Items
             // Player/Item collisions are disabled in the project (carried items must not block movement).
             // Explicit queries still see players. Sweep the real item box over the next physics step so fast
             // throws cannot skip a receiver; stop at walls/counters before considering a player behind them.
+            // Player-only barriers stop controllers but must not occlude catch or landing sweeps.
+            var itemSweepLayers = ~LayerMask.GetMask(PlayerBarrier.LayerName);
             var center = _body.position + _body.rotation * Vector3.Scale(_collider.center, transform.lossyScale);
             var halfSize = Vector3.Scale(_collider.size * 0.5f, transform.lossyScale);
-            foreach (var contact in Physics.OverlapBox(center, halfSize, _body.rotation, ~0,
+            foreach (var contact in Physics.OverlapBox(center, halfSize, _body.rotation, itemSweepLayers,
                          QueryTriggerInteraction.Ignore))
             {
                 var hands = contact.GetComponentInParent<PlayerHands>();
@@ -214,7 +216,7 @@ namespace OverSmithed.Items
                 return;
             }
             var hits = Physics.BoxCastAll(center, halfSize, travel.normalized, _body.rotation, travel.magnitude,
-                ~0, QueryTriggerInteraction.Ignore);
+                itemSweepLayers, QueryTriggerInteraction.Ignore);
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
             foreach (var hit in hits)
             {

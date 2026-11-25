@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 1701477750852675232}
   - component: {fileID: 4271129860910749845}
   - component: {fileID: 3391951280048142134}
+  - component: {fileID: 2847393694184910995}
+  - component: {fileID: 4580457157628920516}
   m_Layer: 0
   m_Name: TrashBin
   m_TagString: Untagged
@@ -70,6 +72,46 @@ MonoBehaviour:
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Interaction.Interactable
   _area: {fileID: 0}
   _highlightBrightness: 1.4
+--- !u!114 &2847393694184910995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2877544475355840767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 0
+  m_InScenePlaced: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &4580457157628920516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2877544475355840767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61581c0698bae44f5b612b10cf22e39e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Counters.TrashBin
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &6065315064248751913
 GameObject:
   m_ObjectHideFlags: 0

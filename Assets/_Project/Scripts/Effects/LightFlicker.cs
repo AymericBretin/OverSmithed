@@ -21,6 +21,13 @@ namespace OverSmithed.Effects
         private Vector3 _basePosition;
         private float _seed;
 
+        /// <summary>The average intensity (a cutscene can fade it, e.g. a fire going out).</summary>
+        public float BaseIntensity
+        {
+            get => _baseIntensity;
+            set => _baseIntensity = Mathf.Max(0f, value);
+        }
+
         private void Awake()
         {
             _light = GetComponent<Light>();
