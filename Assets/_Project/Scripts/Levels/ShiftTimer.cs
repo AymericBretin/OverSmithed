@@ -43,6 +43,7 @@ namespace OverSmithed.Levels
 
         private float _hostTimeLeft;
         private bool _started;
+        private bool _startWhenScreenClear;
         private int _lastLoggedSecond = -1;
 
         /// <summary>The shift of the loaded level, null when the scene has none (lobby, world map).</summary>
@@ -122,7 +123,8 @@ namespace OverSmithed.Levels
                 return;
             }
             NetworkManager.SceneManager.OnLoadEventCompleted -= HandleLoadEventCompleted;
-            StartShift();
+            // The countdown starts once the host's loading screen is gone, so "3" is not hidden under it.
+            _startWhenScreenClear = true;
         }
 
         private void Update()
@@ -130,6 +132,11 @@ namespace OverSmithed.Levels
             if (!IsSpawned || !IsServer)
             {
                 return;
+            }
+            if (_startWhenScreenClear && !UI.LoadingScreen.IsVisible)
+            {
+                _startWhenScreenClear = false;
+                StartShift();
             }
             var state = _state.Value;
             if (state != ShiftState.Countdown && state != ShiftState.Playing)

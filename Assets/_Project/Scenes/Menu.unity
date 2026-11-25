@@ -2059,8 +2059,8 @@ MonoBehaviour:
   m_IgnoreLayout: 0
   m_MinWidth: -1
   m_MinHeight: -1
-  m_PreferredWidth: 620
-  m_PreferredHeight: 310
+  m_PreferredWidth: 640
+  m_PreferredHeight: 214
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
@@ -2086,7 +2086,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 901ab3dccc0c74f3eb5e0e5c2893971f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 0115cbe847a5147f2b84dee2070dd03a, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
