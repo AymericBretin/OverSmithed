@@ -13,5 +13,8 @@ namespace OverSmithed.Core
 
         /// <summary>First level (the graybox shop). Later levels come with LevelDefinition (FLOW-6).</summary>
         public const string Game = "Game";
+
+        /// <summary>Story cutscene played the first time level 1 starts (UI-13).</summary>
+        public const string StoryIntro = "StoryIntro";
     }
 }

@@ -327,7 +327,9 @@ namespace OverSmithed.UI
             {
                 _leaving = true;
                 _holdingSlot = null;
-                if (!SessionService.Instance.LaunchGame())
+                // New save: the story intro plays first (it ends on the world map), else the world map directly.
+                var firstScene = GameProgress.IntroSeen ? SceneNames.WorldMap : SceneNames.StoryIntro;
+                if (!SessionService.Instance.LaunchGame(firstScene))
                 {
                     _leaving = false;
                     _holdProgress = 0f;
