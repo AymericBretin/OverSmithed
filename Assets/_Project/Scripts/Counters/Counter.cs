@@ -44,8 +44,8 @@ namespace OverSmithed.Counters
         /// <summary>Every machine: the held item changed (it can be null). For example a station starts working.</summary>
         public event Action<Counter> ItemChanged;
 
-        /// <summary>The item on this counter, or null. Valid on every machine.</summary>
-        public NetworkItem Item => _item.Value.TryGet(out var networkObject, NetworkManager)
+        /// <summary>The item on this counter, or null. Valid on every machine (null once the network has stopped).</summary>
+        public NetworkItem Item => IsSpawned && _item.Value.TryGet(out var networkObject, NetworkManager)
             ? networkObject.GetComponent<NetworkItem>() : null;
 
         public bool IsEmpty => Item == null;
@@ -53,7 +53,7 @@ namespace OverSmithed.Counters
         /// <summary>Where an item's bottom sits on this counter.</summary>
         public Transform ItemPoint => _itemPoint != null ? _itemPoint : transform;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             _interactable = GetComponent<Interactable>();
 
@@ -90,8 +90,23 @@ namespace OverSmithed.Counters
         }
 
         /// <summary>
+        /// True if <paramref name="item"/> could be put here now: the counter is empty and takes this kind of item
+        /// (a station only takes items it has a recipe for). Ask before letting go of an item.
+        /// </summary>
+        public bool CanAccept(NetworkItem item)
+        {
+            return item != null && IsEmpty && Accepts(item);
+        }
+
+        /// <summary>Which items this counter takes. A plain counter takes any item.</summary>
+        protected virtual bool Accepts(NetworkItem item)
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Host only: puts <paramref name="item"/> on this counter (moved onto the item point).
-        /// Returns false if the counter is not empty.
+        /// Returns false if the counter is not empty or does not take this item.
         /// </summary>
         public bool TryPlace(NetworkItem item)
         {
@@ -100,7 +115,7 @@ namespace OverSmithed.Counters
                 Debug.LogWarning("[Counter] Only the host can place items.", this);
                 return false;
             }
-            if (item == null || !item.IsSpawned || !IsEmpty)
+            if (item == null || !item.IsSpawned || !CanAccept(item))
             {
                 return false;
             }
@@ -164,7 +179,7 @@ namespace OverSmithed.Counters
         }
 
         // On a client the counter's new value can arrive before the item itself: try again every frame.
-        private void Update()
+        protected virtual void Update()
         {
             if (_needsResolve)
             {
