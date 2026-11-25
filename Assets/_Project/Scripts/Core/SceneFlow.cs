@@ -17,11 +17,15 @@ namespace OverSmithed.Core
         /// </summary>
         public static string LastLevelScene { get; private set; }
 
+        /// <summary>Host only: raised when a networked scene starts loading (the loading screen listens).</summary>
+        public static event System.Action<string> NetworkSceneLoadStarted;
+
         // Domain reload is off: forget it when Play Mode starts.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             LastLevelScene = null;
+            NetworkSceneLoadStarted = null;
         }
 
         private void Start()
@@ -89,6 +93,7 @@ namespace OverSmithed.Core
                 Debug.LogError($"[SceneFlow] Could not load {sceneName}: {status}");
                 return false;
             }
+            NetworkSceneLoadStarted?.Invoke(sceneName);
             return true;
         }
     }
