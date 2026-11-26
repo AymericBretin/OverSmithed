@@ -279,12 +279,13 @@ namespace OverSmithed.Items
                 return;
             }
 
-            // A free item that lands on top of an empty counter stays there: a throw, but also an item that hit a
-            // wall or another item first and then fell on a counter (it must not lie loose on top of it).
+            // A free item that lands on top of an empty counter (or onto the tray lying on it) stays there: a throw,
+            // but also an item that hit a wall or another item first and then fell on a counter (it must not lie
+            // loose on top of it).
             // Contact normals are from the counter surface, unlike Rigidbody.velocity which may already have been
             // changed by the collision solver. Hitting a counter's side or underside still bounces.
             var counter = collision.collider.GetComponentInParent<Counter>();
-            if (counter != null && counter.IsSpawned && counter.IsEmpty && Touches(collision, topOnly: true)
+            if (counter != null && counter.IsSpawned && counter.CanAccept(this) && Touches(collision, topOnly: true)
                 && counter.TryPlace(this))
             {
                 return;

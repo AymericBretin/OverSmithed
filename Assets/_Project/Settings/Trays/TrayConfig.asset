@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05700a14c0bf64dc0af58baa13d9a265, type: 3}
+  m_Name: TrayConfig
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Crafting.TrayConfig
+  _cleanTray: {fileID: 11400000, guid: 0d3575a8b5fd94331bd683631defb5f0, type: 2}
+  _wornTray: {fileID: 11400000, guid: 8f24a562070774bc685076c954888db2, type: 2}
+  _items: {fileID: 11400000, guid: 4a41f9c03840b4c42a467b1774145c00, type: 2}
+  _recipes: {fileID: 11400000, guid: 309200b107fbc41059cacd180e628bd0, type: 2}
+  _trayPrefab: {fileID: 5584633002331181390, guid: 7cd5e69f329644722ac4ff8232a8891f, type: 3}

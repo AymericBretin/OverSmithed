@@ -10,6 +10,7 @@ namespace OverSmithed.Crafting
         Furnace = 1,
         Anvil = 2,
         Workbench = 3,
-        AssemblyTable = 4,
+        /// <summary>Parts put together on a forge tray (CR-11). Was the assembly table: same value, assets unchanged.</summary>
+        Tray = 4,
     }
 }

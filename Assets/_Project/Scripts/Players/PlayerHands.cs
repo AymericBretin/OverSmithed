@@ -1,4 +1,5 @@
 using OverSmithed.Counters;
+using OverSmithed.Crafting;
 using OverSmithed.Interaction;
 using OverSmithed.Items;
 using Unity.Netcode;
@@ -176,6 +177,12 @@ namespace OverSmithed.Players
         /// </summary>
         public bool TryThrow(Vector3 playerVelocity = default)
         {
+            // A forge tray is never thrown (its parts would fly everywhere): put it down or drop it.
+            var held = HeldItem;
+            if (held != null && held.TryGetComponent<Tray>(out _))
+            {
+                return false;
+            }
             var velocity = transform.forward * _throwForwardSpeed + Vector3.up * _throwUpSpeed
                            + playerVelocity * _throwMomentum;
             if (!ReleaseInFront(velocity, Mathf.Max(_holdOffset.y, _throwHeight), thrown: true))
@@ -255,6 +262,11 @@ namespace OverSmithed.Players
                 {
                     return false;
                 }
+                // A tray is never destroyed: the bin only empties what lies on it.
+                if (held.TryGetComponent<Tray>(out var heldTray))
+                {
+                    return heldTray.ClearContents();
+                }
                 // A special item (with a home counter, like the water bucket) is never destroyed: like after a
                 // fall, it goes back on its counter with a poof.
                 if (held.Home != null)
@@ -269,6 +281,22 @@ namespace OverSmithed.Players
             {
                 if (held == null)
                 {
+                    // A pile of trays gives its top tray; the rest of the pile stays.
+                    var onCounter = counter.Item;
+                    if (onCounter != null && onCounter.TryGetComponent<Tray>(out var pile) && pile.Count > 1)
+                    {
+                        var top = pile.TakeTop();
+                        if (top == null)
+                        {
+                            return false;
+                        }
+                        if (Hold(top))
+                        {
+                            return true;
+                        }
+                        pile.Absorb(top);
+                        return false;
+                    }
                     var item = counter.Take();
                     if (item == null)
                     {
@@ -285,6 +313,13 @@ namespace OverSmithed.Players
                 // hands instead of falling to the floor.
                 if (!counter.CanAccept(held))
                 {
+                    // Holding a tray: pick the part lying on the counter up onto the tray.
+                    var part = counter.Item;
+                    if (part != null && held.TryGetComponent<Tray>(out var trayInHands) && trayInHands.CanAbsorb(part))
+                    {
+                        counter.Take();
+                        return trayInHands.Absorb(part);
+                    }
                     return false;
                 }
                 Release(held);
