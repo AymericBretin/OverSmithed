@@ -47,9 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19bbce46b60984387b9c4150afbba68c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.WorldMap.LevelNode
-  _levelNumber: 1
-  _displayName: Village
-  _sceneName: 
+  _level: {fileID: 0}
   _color: {r: 0.85, g: 0.65, b: 0.4, a: 1}
   _radius: 1.5
   _platform: {fileID: 8240646974606228656}
@@ -352,7 +350,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 1
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 3002cb49e861f40ffaa546891421912c, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: e643f3f0dea46446caa1ddf3a4e0a70b, type: 2}
