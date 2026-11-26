@@ -9,7 +9,7 @@ namespace OverSmithed.UI
     /// <summary>
     /// One order in the HUD, in two parts: a main panel (patience bar + the item to forge) and, hanging under it,
     /// one small panel ("tab") per group of materials, with the stations to use at the bottom of the tab.
-    /// Only display: <see cref="OrderCardsHud"/> places the cards, the order system (fake for now) sets
+    /// Only display: <see cref="OrderCardsHud"/> places the cards, the order feed sets
     /// <see cref="Patience"/> and removes them.
     /// </summary>
     [RequireComponent(typeof(CanvasGroup))]
@@ -42,6 +42,8 @@ namespace OverSmithed.UI
         [SerializeField] private float _shakeDuration = 0.35f;
         [SerializeField] private float _shakeAmplitude = 9f;
         [SerializeField] private Color _lostTint = new(1f, 0.55f, 0.5f);
+        [SerializeField] private Color _deliveredTint = new(0.35f, 0.95f, 0.45f);
+        [SerializeField] private float _deliveredHold = 0.45f;
 
         private readonly List<Image> _panels = new();
         private CanvasGroup _canvasGroup;
@@ -157,18 +159,45 @@ namespace OverSmithed.UI
         private IEnumerator DeliveredRoutine()
         {
             var start = Rect.anchoredPosition;
-            // Quick pop...
-            for (var t = 0f; t < 1f; t += Time.deltaTime / 0.12f)
+            var iconRotation = _resultIcon.transform.localRotation;
+            foreach (var panel in _panels)
             {
-                SetScaleAroundCenter(start, Mathf.Lerp(1f, 1.12f, t));
+                var tint = _deliveredTint;
+                tint.a = panel.color.a;
+                panel.color = tint;
+            }
+            // Immediate springy pop, a small icon wiggle and a soft green flash.
+            const float bounceDuration = 0.38f;
+            for (var t = 0f; t < 1f; t += Time.deltaTime / bounceDuration)
+            {
+                var decay = (1f - t) * (1f - t);
+                var bounce = Mathf.Sin(t * Mathf.PI * 2.5f) * decay;
+                SetScaleAroundCenter(start, 1f + 0.2f * bounce);
+                _resultIcon.transform.localRotation = iconRotation *
+                    Quaternion.Euler(0f, 0f, Mathf.Sin(t * Mathf.PI * 2f) * 10f * decay);
+                var flash = Mathf.Sin(Mathf.Min(1f, t * 2f) * Mathf.PI) * 0.35f;
+                foreach (var panel in _panels)
+                {
+                    var tint = Color.Lerp(_deliveredTint, Color.white, flash);
+                    tint.a = panel.color.a;
+                    panel.color = tint;
+                }
                 yield return null;
             }
-            // ...then flies up and fades out.
-            for (var t = 0f; t < 1f; t += Time.deltaTime / _exitDuration)
+            SetScaleAroundCenter(start, 1f);
+            _resultIcon.transform.localRotation = iconRotation;
+            // Keep the success readable, including the time already spent bouncing.
+            if (_deliveredHold > bounceDuration)
             {
-                var eased = t * t;
-                SetScaleAroundCenter(start + Vector2.up * (_exitDistance * eased), Mathf.Lerp(1.12f, 0.8f, eased));
-                _canvasGroup.alpha = 1f - eased;
+                yield return new WaitForSeconds(_deliveredHold - bounceDuration);
+            }
+            // Lift away on a gentle arc as the next card takes its place.
+            for (var t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(0.01f, _exitDuration))
+            {
+                var eased = 1f - (1f - t) * (1f - t);
+                var offset = new Vector2(Mathf.Sin(t * Mathf.PI * 0.5f) * 12f, _exitDistance * eased);
+                SetScaleAroundCenter(start + offset, Mathf.Lerp(1f, 0.85f, t * t));
+                _canvasGroup.alpha = 1f - Mathf.SmoothStep(0f, 1f, t);
                 yield return null;
             }
             Destroy(gameObject);

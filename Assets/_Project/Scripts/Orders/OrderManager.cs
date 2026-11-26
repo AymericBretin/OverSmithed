@@ -31,7 +31,21 @@ namespace OverSmithed.Orders
         [Tooltip("Open orders at most. When full, the next order comes as soon as one is gone.")]
         [SerializeField, Min(1)] private int _maxOrders = 4;
 
+        [Header("Patience")]
+        [Tooltip("Seconds of game time allowed for each new order. Existing orders keep their duration.")]
+        [SerializeField, Min(0.1f)] private float _patienceDuration = 60f;
+
+        [Header("Delivery")]
+        [SerializeField, Min(0)] private int _coinsPerOrder = 20;
+        [Tooltip("Optional item for the Inspector delivery test; no crafting or physical item needed.")]
+        [SerializeField] private ItemDefinition _debugDeliveryItem;
+
         private NetworkList<Order> _orders;
+        // A shift's failure history: reliable events for connected clients and a count for late joiners.
+        private NetworkList<Order> _failedOrders;
+        private NetworkList<Order> _completedOrders;
+        private readonly NetworkVariable<int> _teamCoins = new();
+        private readonly NetworkVariable<double> _patienceClock = new();
         // Every machine: a copy of the list, so a removed order is still known when the list is cleared.
         private readonly List<Order> _known = new();
 
@@ -51,6 +65,24 @@ namespace OverSmithed.Orders
         /// <summary>Every machine: an order left the list (delivered, lost, or the shift restarted).</summary>
         public event Action<Order> OrderRemoved;
 
+        /// <summary>Every machine: an order expired. Historical failures are not replayed to late joiners.</summary>
+        public event Action<Order> OrderLost;
+
+        public event Action<Order> OrderCompleted;
+        public event Action<int> CoinsChanged;
+        public int TeamCoins => _teamCoins.Value;
+
+        public bool WasCompleted(Order order) => _completedOrders.Contains(order);
+
+        public int FailedCount => _failedOrders.Count;
+
+        /// <summary>Seconds remaining, from the replicated game clock. For active orders only.</summary>
+        public float GetRemainingPatience(Order order) =>
+            (float)Math.Max(0d, order.ExpiresAt - _patienceClock.Value);
+
+        public float GetPatienceNormalized(Order order) => order.PatienceDuration > 0f
+            ? Mathf.Clamp01(GetRemainingPatience(order) / order.PatienceDuration) : 0f;
+
         public int Count => _orders.Count;
         public Order this[int index] => _orders[index];
         public int MaxOrders => _maxOrders;
@@ -66,11 +98,16 @@ namespace OverSmithed.Orders
         {
             // NetworkList must be created before the object is spawned.
             _orders = new NetworkList<Order>();
+            _failedOrders = new NetworkList<Order>();
+            _completedOrders = new NetworkList<Order>();
         }
 
         public override void OnNetworkSpawn()
         {
             _orders.OnListChanged += HandleListChanged;
+            _failedOrders.OnListChanged += HandleFailuresChanged;
+            _completedOrders.OnListChanged += HandleCompletionsChanged;
+            _teamCoins.OnValueChanged += HandleCoinsChanged;
             _known.Clear();
             foreach (var order in _orders)
             {
@@ -88,6 +125,9 @@ namespace OverSmithed.Orders
         public override void OnNetworkDespawn()
         {
             _orders.OnListChanged -= HandleListChanged;
+            _failedOrders.OnListChanged -= HandleFailuresChanged;
+            _completedOrders.OnListChanged -= HandleCompletionsChanged;
+            _teamCoins.OnValueChanged -= HandleCoinsChanged;
             ShiftTimer.CurrentChanged -= HandleShiftChanged;
             WatchShift(null);
             if (Current == this)
@@ -118,6 +158,32 @@ namespace OverSmithed.Orders
                     _orders.RemoveAt(i);
                     return true;
                 }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Host only: offers a finished item, completing the oldest live order for that item.
+        /// The caller must validate ownership and consume the physical item only when this returns true.
+        /// </summary>
+        public bool TryDeliverItem(int itemId)
+        {
+            if (!IsServer || !IsSpawned || _shift == null || _shift.State != ShiftState.Playing
+                || _itemDatabase == null || !_itemDatabase.TryGet(itemId, out _))
+            {
+                return false;
+            }
+            for (var i = 0; i < _orders.Count; i++)
+            {
+                var order = _orders[i];
+                if (order.ItemId != itemId || GetRemainingPatience(order) <= 0f)
+                {
+                    continue;
+                }
+                _orders.RemoveAt(i);
+                _teamCoins.Value = (int)Math.Min(int.MaxValue, (long)TeamCoins + Math.Max(0, _coinsPerOrder));
+                _completedOrders.Add(order);
+                return true;
             }
             return false;
         }
@@ -157,6 +223,10 @@ namespace OverSmithed.Orders
                 // A (re)started shift begins with no orders.
                 case ShiftState.Countdown:
                     _orders.Clear();
+                    _failedOrders.Clear();
+                    _completedOrders.Clear();
+                    _teamCoins.Value = 0;
+                    _patienceClock.Value = 0d;
                     break;
                 case ShiftState.Playing:
                     StartOrders();
@@ -167,6 +237,10 @@ namespace OverSmithed.Orders
         private void StartOrders()
         {
             _orders.Clear();
+            _failedOrders.Clear();
+            _completedOrders.Clear();
+            _teamCoins.Value = 0;
+            _patienceClock.Value = 0d;
             _nextId = 1;
             _timer = 0f;
             for (var i = 0; i < _ordersAtStart; i++)
@@ -180,6 +254,17 @@ namespace OverSmithed.Orders
             if (!IsServer || !IsSpawned || _shift == null || _shift.State != ShiftState.Playing)
             {
                 return;
+            }
+            _patienceClock.Value += Time.deltaTime;
+            // Expire before generating, including when the list is full or the spawn timer isn't ready.
+            for (var i = _orders.Count - 1; i >= 0; i--)
+            {
+                var order = _orders[i];
+                if (_patienceClock.Value >= order.ExpiresAt)
+                {
+                    _orders.RemoveAt(i);
+                    _failedOrders.Add(order);
+                }
             }
             _timer += Time.deltaTime;
             if (_timer < _interval)
@@ -213,6 +298,8 @@ namespace OverSmithed.Orders
                 Id = _nextId++,
                 ItemId = item.Id,
                 CreatedAt = NetworkManager.ServerTime.Time,
+                PatienceDuration = Mathf.Max(0.1f, _patienceDuration),
+                ExpiresAt = _patienceClock.Value + Mathf.Max(0.1f, _patienceDuration),
             });
             return true;
         }
@@ -246,6 +333,26 @@ namespace OverSmithed.Orders
         }
 
         // ---------- Every machine ----------
+
+        private void HandleCoinsChanged(int previous, int current) => CoinsChanged?.Invoke(current);
+
+        private void HandleCompletionsChanged(NetworkListEvent<Order> change)
+        {
+            if (change.Type == NetworkListEvent<Order>.EventType.Add)
+            {
+                Debug.Log($"[Orders] Completed order #{change.Value.Id}: {Describe(change.Value)}");
+                OrderCompleted?.Invoke(change.Value);
+            }
+        }
+
+        private void HandleFailuresChanged(NetworkListEvent<Order> change)
+        {
+            if (change.Type == NetworkListEvent<Order>.EventType.Add)
+            {
+                Debug.Log($"[Orders] Lost order #{change.Value.Id}: {Describe(change.Value)} (patience expired, {FailedCount} failed)");
+                OrderLost?.Invoke(change.Value);
+            }
+        }
 
         private void HandleListChanged(NetworkListEvent<Order> change)
         {
@@ -284,6 +391,44 @@ namespace OverSmithed.Orders
         }
 
         // ---------- Debug (Inspector context menu, host, Play Mode) ----------
+
+        [ContextMenu("Debug/Deliver oldest requested item (no crafting)")]
+        public void DebugDeliverOldest()
+        {
+            if (!IsServer || !IsSpawned || Count == 0)
+            {
+                Debug.Log("[Orders] Delivery test needs a host and an open order.", this);
+                return;
+            }
+            Debug.Log($"[Orders] Delivery accepted: {TryDeliverItem(_orders[0].ItemId)}; team coins: {TeamCoins}", this);
+        }
+
+        [ContextMenu("Debug/Deliver selected test item")]
+        public void DebugDeliverSelected()
+        {
+            var id = _debugDeliveryItem != null ? _debugDeliveryItem.Id : ItemDefinition.NoneId;
+            Debug.Log($"[Orders] Test item {id}, accepted: {TryDeliverItem(id)}; team coins: {TeamCoins}", this);
+        }
+
+        [ContextMenu("Debug/Try invalid delivery")]
+        public void DebugDeliverInvalid()
+        {
+            Debug.Log($"[Orders] Invalid delivery accepted: {TryDeliverItem(ItemDefinition.NoneId)}; team coins: {TeamCoins}", this);
+        }
+
+        [ContextMenu("Debug/Log orders and patience")]
+        private void DebugLogPatience()
+        {
+            if (!IsSpawned)
+            {
+                return;
+            }
+            Debug.Log($"[Orders] {Count} open, {FailedCount} failed.");
+            foreach (var order in _orders)
+            {
+                Debug.Log($"[Orders] #{order.Id}: {GetRemainingPatience(order):F1}s / {order.PatienceDuration:F1}s left");
+            }
+        }
 
         [ContextMenu("Debug/Add order now")]
         private void DebugAddOrder()
