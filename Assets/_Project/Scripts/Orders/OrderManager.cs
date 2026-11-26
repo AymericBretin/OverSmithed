@@ -72,7 +72,11 @@ namespace OverSmithed.Orders
         public event Action<int> CoinsChanged;
         public int TeamCoins => _teamCoins.Value;
 
+        /// <summary>Every machine: the order was delivered (it left the list with coins).</summary>
         public bool WasCompleted(Order order) => _completedOrders.Contains(order);
+
+        /// <summary>Every machine: distinguishes an expired order from a reset or a manual removal.</summary>
+        public bool WasLost(Order order) => _failedOrders.Contains(order);
 
         public int FailedCount => _failedOrders.Count;
 

@@ -37,8 +37,8 @@ namespace OverSmithed.UI
         [SerializeField] private Vector2 _spawnInterval = new(6f, 12f);
         [Tooltip("Patience of an order in seconds (random between x and y).")]
         [SerializeField] private Vector2 _patience = new(30f, 60f);
-        [Tooltip("Chance that an order is delivered before its patience runs out.")]
-        [SerializeField, Range(0f, 1f)] private float _deliverChance = 0.5f;
+        [Tooltip("Preview only: chance of a simulated delivery without player input. Keep at 0 for gameplay tests.")]
+        [SerializeField, Range(0f, 1f)] private float _deliverChance = 0f;
 
         private readonly List<FakeOrder> _orders = new();
         private readonly List<OrderCardData> _cards = new();

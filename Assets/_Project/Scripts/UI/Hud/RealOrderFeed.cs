@@ -51,9 +51,20 @@ namespace OverSmithed.UI
             {
                 if (!_active.Contains(pair.Key))
                 {
-                    bool delivered = manager.WasCompleted(pair.Value.Order);
-                    if (!delivered) pair.Value.Card.Patience = 0f;
-                    _hud.Remove(pair.Value.Card, delivered);
+                    if (manager.WasCompleted(pair.Value.Order))
+                    {
+                        _hud.Remove(pair.Value.Card, delivered: true);
+                    }
+                    else if (manager.WasLost(pair.Value.Order))
+                    {
+                        pair.Value.Card.Patience = 0f;
+                        _hud.Remove(pair.Value.Card, delivered: false);
+                    }
+                    else
+                    {
+                        // Reset or manual removal: no success or failure to show.
+                        _hud.Discard(pair.Value.Card);
+                    }
                     _removed.Add(pair.Key);
                 }
             }
