@@ -145,7 +145,13 @@ namespace OverSmithed.Crafting
             }
             var top = transform.position + transform.up * (_stackStep * (Count - 1));
             _count.Value -= 1;
-            return NetworkItem.Create(_config.TrayPrefab, _item.Definition, top, transform.rotation);
+            var single = NetworkItem.Create(_config.TrayPrefab, _item.Definition, top, transform.rotation);
+            if (single != null)
+            {
+                // Trays are limited: after a fall it comes back where its pile started, never destroyed.
+                single.Home = _item.Home;
+            }
+            return single;
         }
 
         /// <summary>Host: sets the pile size (for example the starting pile of a level).</summary>

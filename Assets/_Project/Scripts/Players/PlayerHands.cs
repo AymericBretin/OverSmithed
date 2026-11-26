@@ -2,6 +2,7 @@ using OverSmithed.Counters;
 using OverSmithed.Crafting;
 using OverSmithed.Interaction;
 using OverSmithed.Items;
+using OverSmithed.Orders;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -275,6 +276,17 @@ namespace OverSmithed.Players
                     return true;
                 }
                 return trashBin.TryDiscard(held);
+            }
+
+            // A tray with a finished item that an order wants: delivered (the tray comes back worn later).
+            if (target.TryGetComponent<DeliveryPoint>(out var delivery))
+            {
+                if (held == null || !delivery.CanTake(held))
+                {
+                    return false;
+                }
+                Release(held);
+                return delivery.TryDeliver(held);
             }
 
             if (target.TryGetComponent<Counter>(out var counter))

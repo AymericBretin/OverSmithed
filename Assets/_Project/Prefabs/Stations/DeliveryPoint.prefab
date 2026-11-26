@@ -43,6 +43,9 @@ GameObject:
   - component: {fileID: 1211879680534294259}
   - component: {fileID: 131760965558510918}
   - component: {fileID: 5928663053059363036}
+  - component: {fileID: 4456494084102911143}
+  - component: {fileID: 7405407679406564644}
+  - component: {fileID: 8931823527253067193}
   m_Layer: 0
   m_Name: DeliveryPoint
   m_TagString: Untagged
@@ -102,6 +105,68 @@ MonoBehaviour:
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Interaction.Interactable
   _area: {fileID: 0}
   _highlightBrightness: 1.4
+--- !u!114 &4456494084102911143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4352236055040991338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 0
+  m_InScenePlaced: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &7405407679406564644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4352236055040991338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 384eb9bab4b6542329fd8fe323d4d1fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Effects.SquashBounce
+  _target: {fileID: 5196360636480219303}
+  _amount: 0.1
+  _duration: 0.25
+--- !u!114 &8931823527253067193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4352236055040991338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ad46c6c0085d4de7a94121d95cf4b17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Orders.DeliveryPoint
+  ShowTopMostFoldoutHeaderGroup: 1
+  _trays: {fileID: 11400000, guid: 00ea83279964443129377ae87f7dc145, type: 2}
+  _returnCounter: {fileID: 0}
+  _returnDelay: 8
+  _bounce: {fileID: 7405407679406564644}
+  _coinBurst: {fileID: 33742600790138802, guid: a1ad41f9585584c588125d7cc8699b70, type: 3}
+  _effectPoint: {fileID: 3513217706483251406}
+  _returnPoof: {fileID: 8220202884937276124, guid: fb8f2232aa052472cb95cc8aa9be4fd4, type: 3}
 --- !u!1 &8114235606029505436
 GameObject:
   m_ObjectHideFlags: 0
