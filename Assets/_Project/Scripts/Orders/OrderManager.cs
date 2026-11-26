@@ -63,6 +63,9 @@ namespace OverSmithed.Orders
 
         public int FailedCount => _failedOrders.Count;
 
+        /// <summary>Every machine: distinguishes an expired order from a reset or a manual removal.</summary>
+        public bool WasLost(Order order) => _failedOrders.Contains(order);
+
         /// <summary>Seconds remaining, from the replicated game clock. For active orders only.</summary>
         public float GetRemainingPatience(Order order) =>
             (float)Math.Max(0d, order.ExpiresAt - _patienceClock.Value);
