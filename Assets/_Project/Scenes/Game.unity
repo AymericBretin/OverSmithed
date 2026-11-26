@@ -3335,7 +3335,7 @@ MonoBehaviour:
   _maxOrders: 5
   _spawnInterval: {x: 6, y: 12}
   _patience: {x: 30, y: 60}
-  _deliverChance: 0.5
+  _deliverChance: 0
 --- !u!114 &1343134521
 MonoBehaviour:
   m_ObjectHideFlags: 0
