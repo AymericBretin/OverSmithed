@@ -1,11 +1,12 @@
 using TMPro;
+using OverSmithed.Orders;
 using UnityEngine;
 
 namespace OverSmithed.UI
 {
     /// <summary>
     /// The team's coins at the bottom left of the screen. <see cref="SetCoins"/> shows a new value with a small pop.
-    /// Fake for now (always 0): the real team coins come with CR-6 (#28), which calls <see cref="SetCoins"/>.
+    /// Reads the authoritative team total, including when joining a shift already in progress.
     /// </summary>
     public class CoinsHud : MonoBehaviour
     {
@@ -39,6 +40,8 @@ namespace OverSmithed.UI
 
         private void Update()
         {
+            var manager = OrderManager.Current;
+            if (manager != null && manager.IsSpawned) SetCoins(manager.TeamCoins);
             if (_popTarget == null || _popLeft <= 0f)
             {
                 return;
@@ -48,10 +51,5 @@ namespace OverSmithed.UI
             _popTarget.localScale = Vector3.one * (1f + (_popScale - 1f) * t * t);
         }
 
-        [ContextMenu("Add 20 coins (test)")]
-        private void AddTestCoins()
-        {
-            SetCoins(_coins + 20);
-        }
     }
 }
