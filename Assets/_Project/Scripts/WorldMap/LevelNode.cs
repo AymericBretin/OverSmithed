@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using OverSmithed.Levels;
 using TMPro;
 using UnityEngine;
 
@@ -6,8 +7,8 @@ namespace OverSmithed.WorldMap
 {
     /// <summary>
     /// A level spot on the world map: a circle the walker stands on to enter a level (FLOW-5).
-    /// It knows which level it opens (scene name; empty = level not built yet). Scene data only, the same on
-    /// every machine: nothing goes on the network. <see cref="All"/> lists the spots of the loaded map.
+    /// It knows which level it opens (<see cref="Definition"/>: number, name, scene, preview; no scene = level not
+    /// built yet). Scene data only, the same on every machine: nothing goes on the network. <see cref="All"/> lists the spots of the loaded map.
     /// Looks (every machine, local): the number floats; the circle under the walker lights up, breathes and its
     /// number grows; a level not built yet is dimmed; when its level starts, a burst of 3D particles.
     /// </summary>
@@ -15,10 +16,8 @@ namespace OverSmithed.WorldMap
     {
         private static readonly List<LevelNode> AllNodes = new();
 
-        [SerializeField, Min(1)] private int _levelNumber = 1;
-        [SerializeField] private string _displayName = "Village";
-        [Tooltip("Scene loaded for this level. It must be in the build list. Empty: the level is not built yet.")]
-        [SerializeField] private string _sceneName;
+        [Tooltip("The level this circle opens (number, name, scene, preview picture).")]
+        [SerializeField] private LevelDefinition _level;
         [Tooltip("Color of the circle (graybox: one color per level theme).")]
         [SerializeField] private Color _color = new(0.85f, 0.65f, 0.4f);
         [Tooltip("The walker is on this spot when it is closer than this (m, on the ground) to its center.")]
@@ -64,10 +63,11 @@ namespace OverSmithed.WorldMap
         /// <summary>Every level spot of the loaded map.</summary>
         public static IReadOnlyList<LevelNode> All => AllNodes;
 
-        public int LevelNumber => _levelNumber;
-        public string DisplayName => _displayName;
-        public string SceneName => _sceneName;
-        public bool HasLevel => !string.IsNullOrEmpty(_sceneName);
+        public LevelDefinition Definition => _level;
+        public int LevelNumber => _level != null ? _level.Number : 0;
+        public string DisplayName => _level != null ? _level.DisplayName : name;
+        public string SceneName => _level != null ? _level.SceneName : null;
+        public bool HasLevel => _level != null && _level.IsBuilt;
         public float Radius => _radius;
 
         // Domain reload is off: the static list must be emptied by hand when Play Mode starts.
@@ -101,7 +101,7 @@ namespace OverSmithed.WorldMap
         {
             foreach (var node in AllNodes)
             {
-                if (node._levelNumber == levelNumber)
+                if (node.LevelNumber == levelNumber)
                 {
                     return node;
                 }
@@ -157,7 +157,7 @@ namespace OverSmithed.WorldMap
             if (_label != null)
             {
                 // Each number floats with its own phase, so they don't all move together.
-                var bob = Mathf.Sin((time / _labelBobPeriod + _levelNumber * 0.37f) * Mathf.PI * 2f) * _labelBob;
+                var bob = Mathf.Sin((time / _labelBobPeriod + LevelNumber * 0.37f) * Mathf.PI * 2f) * _labelBob;
                 _label.transform.localPosition = _labelRestPosition + Vector3.up * (bob + _active * _activeLabelLift);
                 _label.transform.localScale = _labelRestScale * Mathf.Lerp(1f, _activeLabelScale, _active);
             }
@@ -230,7 +230,7 @@ namespace OverSmithed.WorldMap
         {
             if (_label != null)
             {
-                _label.text = _levelNumber.ToString();
+                _label.text = LevelNumber.ToString();
             }
             ApplyColor(0f);
         }
@@ -259,26 +259,20 @@ namespace OverSmithed.WorldMap
         private void OnValidate()
         {
             ApplyLook();
-            if (string.IsNullOrEmpty(_sceneName))
+            // Only circles placed in a map (not the prefab itself, edited in a preview scene).
+            if (_level == null && gameObject.scene.IsValid()
+                && !UnityEditor.SceneManagement.EditorSceneManager.IsPreviewScene(gameObject.scene))
             {
-                return;
+                Debug.LogWarning($"[LevelNode] '{name}': choose its LevelDefinition.", this);
             }
-            foreach (var scene in UnityEditor.EditorBuildSettings.scenes)
-            {
-                if (scene.enabled && System.IO.Path.GetFileNameWithoutExtension(scene.path) == _sceneName)
-                {
-                    return;
-                }
-            }
-            Debug.LogWarning($"[LevelNode] '{name}': scene '{_sceneName}' is not in the build list.", this);
         }
 
         private void OnDrawGizmos()
         {
             UnityEditor.Handles.color = _color;
             UnityEditor.Handles.DrawWireDisc(transform.position + Vector3.up * 0.05f, Vector3.up, _radius);
-            var scene = HasLevel ? _sceneName : "not built yet";
-            UnityEditor.Handles.Label(transform.position + Vector3.up * 3f, $"{_levelNumber}. {_displayName} ({scene})");
+            var scene = HasLevel ? SceneName : "not built yet";
+            UnityEditor.Handles.Label(transform.position + Vector3.up * 3f, $"{LevelNumber}. {DisplayName} ({scene})");
         }
 #endif
     }

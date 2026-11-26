@@ -11,9 +11,10 @@ namespace OverSmithed.WorldMap
     /// <summary>
     /// World map UI and level start (FLOW-5). On the host, a joined player of this machine presses Interact while the
     /// walker stands on a built level: <see cref="MapWalker.TryEnterLevel"/> starts it for everyone. Away from a spot,
-    /// on a level not built yet, or on a client, Interact does nothing. The hint at the bottom says what Interact
-    /// does here (with this machine's real key names). When a level starts, the screen fades to black on every
-    /// machine. Leaving the map = the pause menu (Escape / Start), not this screen.
+    /// on a level not built yet, or on a client, Interact does nothing. Away from a spot, the hint at the bottom says
+    /// to walk to a level; on a spot, the level popup (UI-12, <see cref="LevelPopup"/>) shows the level and what
+    /// Interact does here (with this machine's real key names). When a level starts, the screen fades to black on
+    /// every machine. Leaving the map = the pause menu (Escape / Start), not this screen.
     /// </summary>
     public class WorldMapScreen : MonoBehaviour
     {
@@ -22,6 +23,8 @@ namespace OverSmithed.WorldMap
         [SerializeField] private TMP_Text _hintText;
         [Tooltip("Hidden while a level starts. Empty = the hint text's own object.")]
         [SerializeField] private GameObject _hintPanel;
+        [Tooltip("Card above the circle the walker stands on.")]
+        [SerializeField] private LevelPopup _popup;
 
         [Header("Fade when a level starts")]
         [Tooltip("Full-screen black image (no raycast), alpha 0 at start.")]
@@ -79,15 +82,32 @@ namespace OverSmithed.WorldMap
             UpdateFade();
 
             var launching = walker != null && walker.IsLaunching;
-            if (_hintPanel != null && _hintPanel.activeSelf == launching)
+            var node = walker != null && !launching ? walker.CurrentNode : null;
+            // On a spot the popup says it all; the bottom hint only says to walk to a level.
+            var showHint = !launching && node == null;
+            if (_hintPanel != null && _hintPanel.activeSelf != showHint)
             {
-                _hintPanel.SetActive(!launching);
+                _hintPanel.SetActive(showHint);
+            }
+            if (_popup != null)
+            {
+                if (node != null)
+                {
+                    _popup.Show(node, BuildAction(node));
+                }
+                else
+                {
+                    _popup.Hide();
+                }
             }
             if (launching)
             {
                 return;
             }
-            ShowHint(BuildHint(walker != null ? walker.CurrentNode : null));
+            if (showHint)
+            {
+                ShowHint(_isHost ? "Walk to a level" : "The host walks to a level...");
+            }
 
             // The pause menu is open (or this press just closed it): Interact belongs to the menu.
             if (!_isHost || walker == null || GamePause.BlocksPlayerInput || !AnyLocalPlayerPressedInteract())
@@ -108,22 +128,18 @@ namespace OverSmithed.WorldMap
             _fade.alpha = t * t * (3f - 2f * t);
         }
 
-        // ---------- Hint ----------
+        // ---------- Hint and popup ----------
 
-        private string BuildHint(LevelNode node)
+        // Last line of the popup: what Interact does on this spot, for this machine.
+        private string BuildAction(LevelNode node)
         {
-            if (node == null)
-            {
-                return _isHost ? "Walk to a level" : "The host walks to a level...";
-            }
-            var title = $"{node.LevelNumber}. {node.DisplayName}";
             if (!node.HasLevel)
             {
-                return $"{title}: coming soon";
+                return "Coming soon";
             }
             return _isHost
-                ? $"{title}: press <color={KeyColor}>{InteractKeys()}</color> to play"
-                : $"{title}: the host can start it";
+                ? $"Press <color={KeyColor}>{InteractKeys()}</color> to play"
+                : "The host starts the level";
         }
 
         private void ShowHint(string hint)
