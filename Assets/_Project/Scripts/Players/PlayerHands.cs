@@ -281,7 +281,9 @@ namespace OverSmithed.Players
                     counter.TryPlace(item);
                     return false;
                 }
-                if (!counter.IsEmpty)
+                // Asked before letting go: an item the counter does not take (no recipe on a station) stays in the
+                // hands instead of falling to the floor.
+                if (!counter.CanAccept(held))
                 {
                     return false;
                 }
