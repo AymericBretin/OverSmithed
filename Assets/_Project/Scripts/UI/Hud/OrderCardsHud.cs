@@ -21,6 +21,19 @@ namespace OverSmithed.UI
         /// <summary>Cards on screen, oldest first (leaving cards are not in this list).</summary>
         public IReadOnlyList<OrderCard> Cards => _cards;
 
+        public void Discard(OrderCard card)
+        {
+            _cards.Remove(card);
+            if (card != null) Destroy(card.gameObject);
+        }
+
+        public void Clear()
+        {
+            foreach (var card in _cards)
+                if (card != null) Destroy(card.gameObject);
+            _cards.Clear();
+        }
+
         private RectTransform Rect => (RectTransform)transform;
 
         public OrderCard Add(OrderCardData data)
