@@ -110,8 +110,13 @@ namespace OverSmithed.Counters
             }
             // Not empty: the item can still go onto the tray lying here.
             var held = Item;
-            return held != null && held.TryGetComponent<Tray>(out var tray) && tray.CanAbsorb(item);
+            return AcceptsOntoItem && held != null && held.TryGetComponent<Tray>(out var tray) && tray.CanAbsorb(item);
         }
+
+        /// <summary>
+        /// False when nothing may go ONTO the item lying here (a station: no parts or trays piled on its item).
+        /// </summary>
+        protected virtual bool AcceptsOntoItem => true;
 
         /// <summary>Which items this counter takes. A plain counter takes any item.</summary>
         protected virtual bool Accepts(NetworkItem item)

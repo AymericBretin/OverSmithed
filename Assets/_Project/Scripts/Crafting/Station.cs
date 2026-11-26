@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using OverSmithed.Counters;
+using OverSmithed.Players;
 using OverSmithed.Items;
 using Unity.Netcode;
 using UnityEngine;
@@ -11,7 +13,8 @@ namespace OverSmithed.Crafting
     /// recipe for its <see cref="StationKind"/>; when the work is done the host changes the item in place
     /// (<see cref="NetworkItem.SetDefinition"/>). Taking the item off before the end resets the work.
     /// Shared base of every station: the furnace works by itself (<see cref="_autoStart"/>); a station worked by hand
-    /// (anvil: hold Use) turns auto start off and calls <see cref="StartWork"/> / <see cref="PauseWork"/>.
+    /// (grindstone, anvil: hold Use) turns auto start off: it works while at least one player holds Use in front of
+    /// it with empty hands (<see cref="PlayerWork"/> tells the host), and pauses otherwise (the progress stays).
     /// Network: only a small <see cref="WorkState"/> travels, written when the work starts, pauses or ends; every
     /// machine computes the current progress from it with the shared network clock, so the bar is smooth everywhere.
     /// </summary>
@@ -48,6 +51,9 @@ namespace OverSmithed.Crafting
         [SerializeField] private bool _autoStart = true;
 
         private readonly NetworkVariable<WorkState> _work = new();
+        // Host: players holding Use on this station (hand work only).
+        private readonly HashSet<PlayerWork> _workers = new();
+        private readonly List<PlayerWork> _gone = new();
 
         // Host: the real progress, counted with the game time (a local pause stops it).
         private float _hostProgress;
@@ -56,6 +62,9 @@ namespace OverSmithed.Crafting
         public event Action<Station> WorkCompleted;
 
         public StationKind Kind => _kind;
+
+        /// <summary>True for a station worked by holding Use (no auto start).</summary>
+        public bool NeedsHandWork => !_autoStart;
 
         /// <summary>Every machine: the recipe for the item on the station, or null.</summary>
         public RecipeDefinition CurrentRecipe
@@ -107,7 +116,32 @@ namespace OverSmithed.Crafting
 
         protected override bool Accepts(NetworkItem item)
         {
+            // A pile of trays never goes on a station: one tray at a time.
+            if (item.TryGetComponent<Tray>(out var tray) && tray.Count > 1)
+            {
+                return false;
+            }
             return item.Definition != null && _recipes != null && _recipes.TryFind(_kind, item.Definition, out _);
+        }
+
+        // Nothing goes onto the item of a station (no piling trays on the grindstone).
+        protected override bool AcceptsOntoItem => false;
+
+        /// <summary>Host: a player starts / stops holding Use on this station (hand work stations only).</summary>
+        public void SetWorker(PlayerWork worker, bool working)
+        {
+            if (!IsServer || worker == null || !NeedsHandWork)
+            {
+                return;
+            }
+            if (working)
+            {
+                _workers.Add(worker);
+            }
+            else
+            {
+                _workers.Remove(worker);
+            }
         }
 
         // ---------- Host ----------
@@ -156,7 +190,15 @@ namespace OverSmithed.Crafting
         protected override void Update()
         {
             base.Update();
-            if (!IsServer || !IsSpawned || !IsWorking)
+            if (!IsServer || !IsSpawned)
+            {
+                return;
+            }
+            if (NeedsHandWork)
+            {
+                UpdateHandWork();
+            }
+            if (!IsWorking)
             {
                 return;
             }
@@ -171,6 +213,36 @@ namespace OverSmithed.Crafting
             if (_hostProgress >= 1f)
             {
                 Complete(recipe);
+            }
+        }
+
+        // Host: a hand work station runs while someone valid holds Use on it (in reach, empty hands, can act).
+        private void UpdateHandWork()
+        {
+            var anyone = false;
+            _gone.Clear();
+            foreach (var worker in _workers)
+            {
+                if (worker == null || !worker.IsSpawned)
+                {
+                    _gone.Add(worker);
+                }
+                else if (worker.CanWorkAt(this))
+                {
+                    anyone = true;
+                }
+            }
+            foreach (var worker in _gone)
+            {
+                _workers.Remove(worker);
+            }
+            if (anyone && !IsWorking && CurrentRecipe != null)
+            {
+                StartWork();
+            }
+            else if (!anyone && IsWorking)
+            {
+                PauseWork();
             }
         }
 

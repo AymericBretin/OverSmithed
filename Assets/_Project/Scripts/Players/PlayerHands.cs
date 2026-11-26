@@ -325,9 +325,11 @@ namespace OverSmithed.Players
                 // hands instead of falling to the floor.
                 if (!counter.CanAccept(held))
                 {
-                    // Holding a tray: pick the part lying on the counter up onto the tray.
+                    // Holding a tray: pick the PART lying on the counter (or station) up onto the tray. Never another
+                    // tray: piles are made by putting a tray down onto a pile, not by sweeping one off a station.
                     var part = counter.Item;
-                    if (part != null && held.TryGetComponent<Tray>(out var trayInHands) && trayInHands.CanAbsorb(part))
+                    if (part != null && !part.TryGetComponent<Tray>(out _) && held.TryGetComponent<Tray>(out var trayInHands)
+                        && trayInHands.CanAbsorb(part))
                     {
                         counter.Take();
                         return trayInHands.Absorb(part);
@@ -404,7 +406,8 @@ namespace OverSmithed.Players
             return Vector3.Angle(forward, toItem) <= _catchAngle;
         }
 
-        private bool IsInReach(NetworkObject target)
+        /// <summary>Host: true if <paramref name="target"/> is close enough to be used (2 m flat by default).</summary>
+        public bool IsInReach(NetworkObject target)
         {
             var point = target.TryGetComponent<Interactable>(out var interactable)
                 ? interactable.ClosestPoint(transform.position)

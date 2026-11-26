@@ -51,6 +51,7 @@ GameObject:
   - component: {fileID: 6366123789222199716}
   - component: {fileID: 3662721793658422320}
   - component: {fileID: 5123174603395937475}
+  - component: {fileID: 6723159243016928231}
   m_Layer: 6
   m_Name: NetworkPlayer
   m_TagString: Untagged
@@ -290,6 +291,7 @@ MonoBehaviour:
   _throwForwardSpeed: 9
   _throwUpSpeed: 2.5
   _throwMomentum: 0.5
+  _throwHeight: 0.9
   _catchAngle: 70
 --- !u!114 &3662721793658422320
 MonoBehaviour:
@@ -336,6 +338,19 @@ MonoBehaviour:
   _blinkPeriod: 0.16
   _visualRoot: {fileID: 6301662415859197057}
   _poofPrefab: {fileID: 8220202884937276124, guid: fb8f2232aa052472cb95cc8aa9be4fd4, type: 3}
+--- !u!114 &6723159243016928231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450035355314237043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 748af74e56a0c4518b705fd3232e78b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.PlayerWork
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &8257111962428553630
 GameObject:
   m_ObjectHideFlags: 0

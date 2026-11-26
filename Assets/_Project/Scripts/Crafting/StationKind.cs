@@ -12,5 +12,7 @@ namespace OverSmithed.Crafting
         Workbench = 3,
         /// <summary>Parts put together on a forge tray (CR-11). Was the assembly table: same value, assets unchanged.</summary>
         Tray = 4,
+        /// <summary>Polishes worn trays (CR-19). A chore station: never used by item recipes.</summary>
+        Grindstone = 5,
     }
 }
