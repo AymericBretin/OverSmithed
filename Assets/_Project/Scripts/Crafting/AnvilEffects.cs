@@ -1,5 +1,4 @@
 using OverSmithed.Counters;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace OverSmithed.Crafting
@@ -8,12 +7,8 @@ namespace OverSmithed.Crafting
     /// Sparks on each hammer beat. The beat follows replicated work progress, so pausing preserves its phase and
     /// every machine uses the same rhythm as PlayerHammerAnimation.
     /// </summary>
-    public class AnvilEffects : MonoBehaviour
+    public class AnvilEffects : HandWorkEffects
     {
-        private static readonly List<AnvilEffects> Instances = new();
-        public static IReadOnlyList<AnvilEffects> All => Instances;
-
-        [SerializeField] private Station _station;
         [SerializeField] private ParticleSystem _sparks;
         [SerializeField, Min(0.05f)] private float _hitInterval = 0.6f;
         [Tooltip("Contact point in each swing, matching the two contacts in Player_HammerLoop.")]
@@ -27,17 +22,15 @@ namespace OverSmithed.Crafting
         private int _lastHit = -1;
         private float _flash;
 
-        public Station Station => _station;
+        public override HandTool Tool => HandTool.Hammer;
+
         // The clip has two swings. Both the pose and the effects use elapsed WORK time, not local wall time.
-        public float AnimationPhase => Mathf.Repeat(_station.WorkSeconds / (2f * Mathf.Max(0.05f, _hitInterval)), 1f);
+        public override float AnimationPhase => Mathf.Repeat(_station.WorkSeconds / (2f * Mathf.Max(0.05f, _hitInterval)), 1f);
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => Instances.Clear();
-
-        private void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
             _lastHit = -1;
-            Instances.Add(this);
             if (_station != null)
             {
                 _station.ItemChanged += HandleItemChanged;
@@ -45,9 +38,9 @@ namespace OverSmithed.Crafting
             }
         }
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
-            Instances.Remove(this);
+            base.OnDisable();
             _flash = 0f;
             if (_hitLight != null) _hitLight.intensity = 0f;
             if (_station != null)

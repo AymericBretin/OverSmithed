@@ -362,12 +362,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e4078da1f551a4be8803a0105767b82c, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.PlayerHammerAnimation
   _hammerPrefab: {fileID: 919132149155446097, guid: dd0c54764295c435ca1e2386faf90a5c, type: 3}
   _hammerPosition: {x: 0, y: 0, z: 0}
   _hammerEuler: {x: 310.73108, y: 171.80092, z: 302.56113}
   _hammerScale: {x: 1.25, y: 1.25, z: 1.25}
+  _saw:
+    Prefab: {fileID: 919132149155446097, guid: f3d33a5ce0fff47318b8babdce2c7358, type: 3}
+    Position: {x: 0.008302015, y: -0.01847746, z: -0.03155804}
+    Euler: {x: 341.64395, y: 86.09025, z: 95.59479}
+    Scale: {x: 0.75, y: 0.75, z: 0.75}
 --- !u!1 &8257111962428553630
 GameObject:
   m_ObjectHideFlags: 0
