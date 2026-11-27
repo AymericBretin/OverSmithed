@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using OverSmithed.Crafting;
 using OverSmithed.Items;
@@ -7,16 +6,16 @@ using UnityEngine;
 namespace OverSmithed.UI
 {
     /// <summary>
-    /// What an order card shows. Only display data: the real orders (UI-10) build one of these from their recipe.
+    /// What an order card shows. Only display data: <see cref="RealOrderFeed"/> builds one from the recipe of each
+    /// real order.
     /// </summary>
-    [Serializable]
     public class OrderCardData
     {
-        [Tooltip("Name of the item to forge (used by the placeholder icon).")]
+        /// <summary>Name of the item to forge (used by the placeholder icon).</summary>
         public string ResultName;
-        [Tooltip("Icon of the item to forge. Empty: placeholder.")]
+        /// <summary>Icon of the item to forge. Empty: placeholder.</summary>
         public Sprite ResultIcon;
-        [Tooltip("Materials, by group. Each group shows its stations under it.")]
+        /// <summary>Materials, by group. Each group shows its stations under it.</summary>
         public List<OrderCardGroup> Groups = new();
 
         public static OrderCardData FromItem(ItemDefinition result)
@@ -94,7 +93,6 @@ namespace OverSmithed.UI
     /// Materials worked together, for example 2 logs on the workbench. The station icons are drawn under them,
     /// in order (ore: furnace then anvil). No station: the materials are used as they are.
     /// </summary>
-    [Serializable]
     public class OrderCardGroup
     {
         public List<ItemDefinition> Materials = new();
