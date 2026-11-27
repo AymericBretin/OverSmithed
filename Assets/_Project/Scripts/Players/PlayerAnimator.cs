@@ -156,8 +156,8 @@ namespace OverSmithed.Players
                 return;
             }
 
-            // The full-body hammer layer owns the arms. A pending put-down reach must not bend its strike.
-            if (_hammerAnimation != null && _hammerAnimation.IsHammering)
+            // The full-body work layer (hammer, saw) owns the arms. A pending put-down reach must not bend its strike.
+            if (_hammerAnimation != null && _hammerAnimation.IsWorking)
             {
                 animator.SetLayerWeight(_carryLayer, 0f);
                 _gestureElapsed = float.MaxValue;

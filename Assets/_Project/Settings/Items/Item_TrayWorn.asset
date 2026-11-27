@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Items.ItemDefinition
   _id: 11
   _displayName: Worn Tray
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 86f87b9c88a024cd3980cfd2c563c82d, type: 3}
   _prefab: {fileID: 5471908136108960920, guid: a2b80d726a44242db95b5f8ca5911fb2, type: 3}

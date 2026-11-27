@@ -8,6 +8,7 @@ namespace OverSmithed.Items
     /// - When the item jumps somewhere (counter to hands, crate to hands, hands to counter…), the visual flies
     ///   from where it was drawn to its new place, on a small arc, then does a little "pop".
     /// - <see cref="HandsLift"/>: while carried, the player's animator moves it up and down with the hands.
+    /// - <see cref="Wobble"/>: a short squash and tilt, for example on each saw stroke at the workbench.
     /// This is the only script that moves the visual child.
     /// </summary>
     // Runs after the other LateUpdates (the player's animator sets HandsLift there), right before drawing.
@@ -25,6 +26,8 @@ namespace OverSmithed.Items
         [SerializeField] private float _popScale = 1.15f;
         [Tooltip("Time (seconds) of the pop when the item lands.")]
         [SerializeField] private float _popTime = 0.15f;
+        [Tooltip("Time (seconds) of a wobble (a hit on a station).")]
+        [SerializeField] private float _wobbleTime = 0.2f;
 
         private Transform _visual;
         private Vector3 _restPosition;
@@ -41,9 +44,23 @@ namespace OverSmithed.Items
         private Quaternion _flyFromRotation;
         private float _popElapsed = float.MaxValue;
         private float _noFlightUntil = float.MinValue;
+        private float _wobbleElapsed = float.MaxValue;
+        private float _wobbleAmount;
+        private float _wobbleSide = 1f;
 
         /// <summary>Extra height (m, world) of the visual: set every frame by the player carrying the item, 0 otherwise.</summary>
         public float HandsLift { get; set; }
+
+        /// <summary>
+        /// A short squash and tilt of the visual (<paramref name="amount"/> 0.1 = 10 % lower at the deepest). Each call
+        /// tilts to the other side, so repeated hits rock the item left and right.
+        /// </summary>
+        public void Wobble(float amount)
+        {
+            _wobbleAmount = amount;
+            _wobbleElapsed = 0f;
+            _wobbleSide = -_wobbleSide;
+        }
 
         private void Awake()
         {
@@ -153,8 +170,19 @@ namespace OverSmithed.Items
                 _popElapsed += deltaTime;
             }
 
-            _visual.SetPositionAndRotation(position, rotation);
-            _visual.localScale = _restScale * scale;
+            var squash = Vector3.one;
+            var shownRotation = rotation;
+            if (_wobbleElapsed < _wobbleTime)
+            {
+                var k = Mathf.Sin(Mathf.PI * _wobbleElapsed / _wobbleTime) * _wobbleAmount;
+                squash = new Vector3(1f + k * 0.5f, 1f - k, 1f + k * 0.5f);
+                // Tilt around the camera's forward-ish axis (world Z) so the rock reads from the top-down view.
+                shownRotation = Quaternion.AngleAxis(_wobbleSide * k * 60f, Vector3.forward) * rotation;
+                _wobbleElapsed += deltaTime;
+            }
+
+            _visual.SetPositionAndRotation(position, shownRotation);
+            _visual.localScale = Vector3.Scale(_restScale * scale, squash);
             _shownPosition = position;
             _shownRotation = rotation;
         }

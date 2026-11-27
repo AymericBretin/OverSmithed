@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Items.ItemDefinition
   _id: 10
   _displayName: Forge Tray
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: bfce19b85ffd1410383d5e8c1155d4db, type: 3}
   _prefab: {fileID: 2715571115834647326, guid: 888a549f22eb54a3197ddf3a29acdcb0, type: 3}
