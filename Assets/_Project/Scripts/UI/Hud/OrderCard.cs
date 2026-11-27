@@ -241,7 +241,7 @@ namespace OverSmithed.UI
                 StationKind.Furnace => UiSprite.StationFurnace,
                 StationKind.Anvil => UiSprite.StationAnvil,
                 StationKind.Workbench => UiSprite.StationWorkbench,
-                StationKind.AssemblyTable => UiSprite.StationAssemblyTable,
+                StationKind.Tray => UiSprite.StationAssemblyTable,
                 _ => UiSprite.None,
             };
         }
@@ -254,7 +254,7 @@ namespace OverSmithed.UI
                 StationKind.Furnace => "F",
                 StationKind.Anvil => "A",
                 StationKind.Workbench => "W",
-                StationKind.AssemblyTable => "T",
+                StationKind.Tray => "T",
                 _ => "?",
             };
         }
@@ -266,7 +266,7 @@ namespace OverSmithed.UI
                 StationKind.Furnace => new Color(0.92f, 0.42f, 0.12f),
                 StationKind.Anvil => new Color(0.40f, 0.43f, 0.50f),
                 StationKind.Workbench => new Color(0.58f, 0.38f, 0.20f),
-                StationKind.AssemblyTable => new Color(0.22f, 0.47f, 0.75f),
+                StationKind.Tray => new Color(0.22f, 0.47f, 0.75f),
                 _ => Color.gray,
             };
         }

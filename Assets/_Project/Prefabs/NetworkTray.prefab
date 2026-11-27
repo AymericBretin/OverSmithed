@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &6225022463245323660
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 945120341192406242, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 945120341192406242, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 945120341192406242, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 945120341192406242, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 945120341192406242, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 945120341192406242, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 945120341192406242, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 945120341192406242, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 945120341192406242, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 945120341192406242, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1931711749682888356, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_Name
+      value: NetworkTray
+      objectReference: {fileID: 0}
+    - target: {fileID: 3668952247817198214, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: m_InScenePlaced
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3668952247817198214, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 4004494282
+      objectReference: {fileID: 0}
+    - target: {fileID: 3668952247817198214, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 2100985637
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1931711749682888356, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5532943595306864133}
+  m_SourcePrefab: {fileID: 100100000, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+--- !u!1 &5525188217157677864 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1931711749682888356, guid: b4fdcd0193a9745509f7fc74dad953bf, type: 3}
+  m_PrefabInstance: {fileID: 6225022463245323660}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5532943595306864133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5525188217157677864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cc356ee62b7545da9bef809ab975436, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Crafting.Tray
+  ShowTopMostFoldoutHeaderGroup: 1
+  _config: {fileID: 11400000, guid: 00ea83279964443129377ae87f7dc145, type: 2}
+  _contentsHeight: 0.04
+  _stackStep: 0.065
+  _contentsSpacing: 0.18
+  _popScale: 1.3
+  _popTime: 0.3
+  _fuseBurst: {fileID: 33742600790138802, guid: 20e9e44ea47e9496ea06494fe6dab29e, type: 3}

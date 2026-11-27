@@ -48,6 +48,22 @@ namespace OverSmithed.Crafting
             return false;
         }
 
+        /// <summary>
+        /// True if some recipe of this station uses all of <paramref name="items"/> (maybe with more items to add).
+        /// For example blade alone on a tray: yes (blade + handle = sword).
+        /// </summary>
+        public bool CanStillMake(StationKind station, IReadOnlyList<ItemDefinition> items)
+        {
+            foreach (var candidate in _recipes)
+            {
+                if (IsUsable(candidate) && candidate.Station == station && candidate.ContainsInputs(items))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /// <summary>"How is this item made?" Returns false for items that are not made (raw materials).</summary>
         public bool TryFindByOutput(ItemDefinition output, out RecipeDefinition recipe)
         {

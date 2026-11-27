@@ -52,7 +52,7 @@ namespace OverSmithed.UI
             if (inputs.Count > 1 && AllRaw(inputs, recipes))
             {
                 var together = new OrderCardGroup();
-                if (recipe.Station != StationKind.AssemblyTable)
+                if (recipe.Station != StationKind.Tray)
                 {
                     together.Stations.Add(recipe.Station);
                 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OverSmithed.Crafting;
 using OverSmithed.Effects;
 using OverSmithed.Interaction;
 using OverSmithed.Items;
@@ -15,6 +16,8 @@ namespace OverSmithed.Counters
     /// Only a reference to the item travels on the network; the item's position is already synced by its
     /// NetworkTransform. On every machine the item is attached to the counter's <see cref="Interactable"/>:
     /// players aim at the counter, and the item lights up with it.
+    /// A counter holding a forge tray (CR-11) also takes items that go ONTO the tray: a part to assemble, or an empty
+    /// tray to pile up (<see cref="Tray.Absorb"/>).
     /// </summary>
     [RequireComponent(typeof(Interactable))]
     public class Counter : NetworkBehaviour
@@ -23,8 +26,10 @@ namespace OverSmithed.Counters
         [SerializeField] private Transform _itemPoint;
         [Tooltip("Optional: item already on the counter when the level starts (created by the host).")]
         [SerializeField] private ItemDefinition _startingItem;
-        [Tooltip("Prefab used to create the starting item.")]
+        [Tooltip("Prefab used to create the starting item (the tray prefab for a pile of trays).")]
         [SerializeField] private NetworkItem _itemPrefab;
+        [Tooltip("If the starting item is a tray: how many trays start piled here (a pile of clean trays).")]
+        [SerializeField, Min(1)] private int _startingStack = 1;
         [Tooltip("Optional: squashes the counter when an item is taken from it or lands on it.")]
         [SerializeField] private SquashBounce _bounce;
         [Tooltip("When an item is put on the counter, the bounce waits this long (seconds): the item's flight time.")]
@@ -95,8 +100,23 @@ namespace OverSmithed.Counters
         /// </summary>
         public bool CanAccept(NetworkItem item)
         {
-            return item != null && IsEmpty && Accepts(item);
+            if (item == null)
+            {
+                return false;
+            }
+            if (IsEmpty)
+            {
+                return Accepts(item);
+            }
+            // Not empty: the item can still go onto the tray lying here.
+            var held = Item;
+            return AcceptsOntoItem && held != null && held.TryGetComponent<Tray>(out var tray) && tray.CanAbsorb(item);
         }
+
+        /// <summary>
+        /// False when nothing may go ONTO the item lying here (a station: no parts or trays piled on its item).
+        /// </summary>
+        protected virtual bool AcceptsOntoItem => true;
 
         /// <summary>Which items this counter takes. A plain counter takes any item.</summary>
         protected virtual bool Accepts(NetworkItem item)
@@ -118,6 +138,14 @@ namespace OverSmithed.Counters
             if (item == null || !item.IsSpawned || !CanAccept(item))
             {
                 return false;
+            }
+
+            // Onto the tray lying here: the tray takes it in (the item leaves the network).
+            var held = Item;
+            if (held != null)
+            {
+                item.StopPhysics();
+                return held.TryGetComponent<Tray>(out var tray) && tray.Absorb(item);
             }
 
             var point = ItemPoint;
@@ -234,6 +262,10 @@ namespace OverSmithed.Counters
                 // A special item (water bucket...) comes back here if it falls off the map.
                 item.Home = this;
                 TryPlace(item);
+                if (_startingStack > 1 && item.TryGetComponent<Tray>(out var tray))
+                {
+                    tray.SetCount(_startingStack);
+                }
             }
         }
 

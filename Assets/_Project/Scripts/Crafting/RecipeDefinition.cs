@@ -44,6 +44,26 @@ namespace OverSmithed.Crafting
             return true;
         }
 
+        /// <summary>
+        /// True if <paramref name="items"/> are all among this recipe's inputs (maybe not all of them yet), in any
+        /// order: the recipe can still be made by adding the missing ones. An item twice needs it twice here.
+        /// </summary>
+        public bool ContainsInputs(IReadOnlyList<ItemDefinition> items)
+        {
+            if (items == null || items.Count > _inputs.Count)
+            {
+                return false;
+            }
+            foreach (var item in items)
+            {
+                if (Count(items, item) > Count(_inputs, item))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         /// <summary>True if this recipe needs exactly one item, and it is <paramref name="item"/>.</summary>
         public bool HasSingleInput(ItemDefinition item)
         {

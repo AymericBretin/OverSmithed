@@ -1,6 +1,8 @@
 using OverSmithed.Counters;
+using OverSmithed.Crafting;
 using OverSmithed.Interaction;
 using OverSmithed.Items;
+using OverSmithed.Orders;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -176,6 +178,12 @@ namespace OverSmithed.Players
         /// </summary>
         public bool TryThrow(Vector3 playerVelocity = default)
         {
+            // A forge tray is never thrown (its parts would fly everywhere): put it down or drop it.
+            var held = HeldItem;
+            if (held != null && held.TryGetComponent<Tray>(out _))
+            {
+                return false;
+            }
             var velocity = transform.forward * _throwForwardSpeed + Vector3.up * _throwUpSpeed
                            + playerVelocity * _throwMomentum;
             if (!ReleaseInFront(velocity, Mathf.Max(_holdOffset.y, _throwHeight), thrown: true))
@@ -255,6 +263,11 @@ namespace OverSmithed.Players
                 {
                     return false;
                 }
+                // A tray is never destroyed: the bin only empties what lies on it.
+                if (held.TryGetComponent<Tray>(out var heldTray))
+                {
+                    return heldTray.ClearContents();
+                }
                 // A special item (with a home counter, like the water bucket) is never destroyed: like after a
                 // fall, it goes back on its counter with a poof.
                 if (held.Home != null)
@@ -265,10 +278,37 @@ namespace OverSmithed.Players
                 return trashBin.TryDiscard(held);
             }
 
+            // A tray with a finished item that an order wants: delivered (the tray comes back worn later).
+            if (target.TryGetComponent<DeliveryPoint>(out var delivery))
+            {
+                if (held == null || !delivery.CanTake(held))
+                {
+                    return false;
+                }
+                Release(held);
+                return delivery.TryDeliver(held);
+            }
+
             if (target.TryGetComponent<Counter>(out var counter))
             {
                 if (held == null)
                 {
+                    // A pile of trays gives its top tray; the rest of the pile stays.
+                    var onCounter = counter.Item;
+                    if (onCounter != null && onCounter.TryGetComponent<Tray>(out var pile) && pile.Count > 1)
+                    {
+                        var top = pile.TakeTop();
+                        if (top == null)
+                        {
+                            return false;
+                        }
+                        if (Hold(top))
+                        {
+                            return true;
+                        }
+                        pile.Absorb(top);
+                        return false;
+                    }
                     var item = counter.Take();
                     if (item == null)
                     {
@@ -285,6 +325,15 @@ namespace OverSmithed.Players
                 // hands instead of falling to the floor.
                 if (!counter.CanAccept(held))
                 {
+                    // Holding a tray: pick the PART lying on the counter (or station) up onto the tray. Never another
+                    // tray: piles are made by putting a tray down onto a pile, not by sweeping one off a station.
+                    var part = counter.Item;
+                    if (part != null && !part.TryGetComponent<Tray>(out _) && held.TryGetComponent<Tray>(out var trayInHands)
+                        && trayInHands.CanAbsorb(part))
+                    {
+                        counter.Take();
+                        return trayInHands.Absorb(part);
+                    }
                     return false;
                 }
                 Release(held);
@@ -357,7 +406,8 @@ namespace OverSmithed.Players
             return Vector3.Angle(forward, toItem) <= _catchAngle;
         }
 
-        private bool IsInReach(NetworkObject target)
+        /// <summary>Host: true if <paramref name="target"/> is close enough to be used (2 m flat by default).</summary>
+        public bool IsInReach(NetworkObject target)
         {
             var point = target.TryGetComponent<Interactable>(out var interactable)
                 ? interactable.ClosestPoint(transform.position)
