@@ -79,6 +79,38 @@ namespace OverSmithed.Crafting
             return false;
         }
 
+        /// <summary>
+        /// "How much work is this item?" <paramref name="materials"/> = raw materials to take from the crates,
+        /// <paramref name="steps"/> = uses of a work station (furnace, anvil, workbench...). Joining parts on a forge
+        /// tray is not counted: every order ends with it. Sword = 2 materials (ore, wood) + 3 steps = 5 of work.
+        /// Used to rank the orders from simple to long (CR-16).
+        /// </summary>
+        public int CountWork(ItemDefinition item, out int materials, out int steps)
+        {
+            materials = 0;
+            steps = 0;
+            CountWork(item, 0, ref materials, ref steps);
+            return materials + steps;
+        }
+
+        private void CountWork(ItemDefinition item, int depth, ref int materials, ref int steps)
+        {
+            // A raw material (no recipe makes it). The depth limit stops a broken loop.
+            if (item == null || depth > 10 || !TryFindByOutput(item, out var recipe))
+            {
+                materials++;
+                return;
+            }
+            if (recipe.Station != StationKind.Tray)
+            {
+                steps++;
+            }
+            foreach (var input in recipe.Inputs)
+            {
+                CountWork(input, depth + 1, ref materials, ref steps);
+            }
+        }
+
         private static bool IsUsable(RecipeDefinition recipe)
         {
             return recipe != null && recipe.FindProblem() == null;

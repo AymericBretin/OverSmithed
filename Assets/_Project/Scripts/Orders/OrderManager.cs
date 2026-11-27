@@ -10,8 +10,8 @@ namespace OverSmithed.Orders
 {
     /// <summary>
     /// The customer orders of the level (in-scene NetworkObject <c>Orders</c> in a level scene). The host creates them
-    /// during the shift: <see cref="_ordersAtStart"/> at "Go!", then one every <see cref="_interval"/> seconds while
-    /// fewer than <see cref="_maxOrders"/> are open. Each order is an item picked at random in <see cref="_menu"/>.
+    /// during the shift: <see cref="_ordersAtStart"/> at "Go!", then more and more often (<see cref="_ramp"/>, CR-16)
+    /// while there is room. Each order is an item picked in <see cref="_menu"/>, weighted by the difficulty.
     /// Network: one NetworkList written by the host only; NGO copies it to every machine in the same order (a late
     /// joiner gets the whole list). Every machine raises <see cref="OrderAdded"/> / <see cref="OrderRemoved"/> and logs
     /// the changes.
@@ -19,21 +19,17 @@ namespace OverSmithed.Orders
     public class OrderManager : NetworkBehaviour
     {
         [Header("Menu")]
-        [Tooltip("Items the customers of this level can order (the level definition will hold this list later).")]
-        [SerializeField] private List<ItemDefinition> _menu = new();
+        [Tooltip("Items the customers of this level can order, with how often at the start and at the end of the " +
+                 "shift (the level definition will hold this list later). \"Fill weights from recipes\" below sets " +
+                 "the weights from the work of each item: simple items first, long ones later.")]
+        [SerializeField] private List<OrderMenuEntry> _menu = new();
         [SerializeField] private ItemDatabase _itemDatabase;
 
         [Header("Rhythm")]
-        [Tooltip("Orders that come in at once when the shift starts.")]
+        [Tooltip("Orders that come in at once when the shift starts (picked at difficulty 0).")]
         [SerializeField, Min(0)] private int _ordersAtStart = 2;
-        [Tooltip("Seconds between two new orders (game time: a local pause stops it).")]
-        [SerializeField, Min(0.5f)] private float _interval = 20f;
-        [Tooltip("Open orders at most. When full, the next order comes as soon as one is gone.")]
-        [SerializeField, Min(1)] private int _maxOrders = 4;
-
-        [Header("Patience")]
-        [Tooltip("Seconds of game time allowed for each new order. Existing orders keep their duration.")]
-        [SerializeField, Min(0.1f)] private float _patienceDuration = 60f;
+        [Tooltip("How the orders get faster and harder during the shift.")]
+        [SerializeField] private OrderRamp _ramp = new();
 
         [Header("Delivery")]
         [SerializeField, Min(0)] private int _coinsPerOrder = 20;
@@ -89,7 +85,28 @@ namespace OverSmithed.Orders
 
         public int Count => _orders.Count;
         public Order this[int index] => _orders[index];
-        public int MaxOrders => _maxOrders;
+        /// <summary>The difficulty settings of this level (read only).</summary>
+        public OrderRamp Ramp => _ramp;
+
+        /// <summary>Open orders at most right now (grows with the difficulty).</summary>
+        public int MaxOrders => _ramp.MaxOpenAt(Difficulty);
+
+        /// <summary>
+        /// Every machine: the difficulty now, 0 (start values) to 1 (end values), from the synced shift time.
+        /// 0 outside the shift.
+        /// </summary>
+        public float Difficulty
+        {
+            get
+            {
+                var shift = ShiftTimer.Current;
+                if (shift == null || shift.State != ShiftState.Playing || shift.Duration <= 0f)
+                {
+                    return 0f;
+                }
+                return _ramp.DifficultyAt(1f - shift.TimeLeft / shift.Duration);
+            }
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -270,70 +287,108 @@ namespace OverSmithed.Orders
                     _failedOrders.Add(order);
                 }
             }
+            // The interval of the difficulty now: the wait shrinks during the shift.
+            var interval = _ramp.IntervalAt(Difficulty);
             _timer += Time.deltaTime;
-            if (_timer < _interval)
+            if (_timer < interval)
             {
                 return;
             }
             // Full: the timer waits at the end, so a new order comes as soon as a place is free.
             if (TryAddOrder())
             {
-                _timer -= _interval;
+                _timer -= interval;
             }
             else
             {
-                _timer = _interval;
+                _timer = interval;
             }
         }
 
         private bool TryAddOrder()
         {
-            if (_orders.Count >= _maxOrders)
+            var difficulty = Difficulty;
+            if (_orders.Count >= _ramp.MaxOpenAt(difficulty))
             {
                 return false;
             }
-            var item = PickItem();
+            var item = PickItem(difficulty);
             if (item == null)
             {
                 return false;
             }
+            var patience = _ramp.PatienceAt(difficulty);
             _orders.Add(new Order
             {
                 Id = _nextId++,
                 ItemId = item.Id,
                 CreatedAt = NetworkManager.ServerTime.Time,
-                PatienceDuration = Mathf.Max(0.1f, _patienceDuration),
-                ExpiresAt = _patienceClock.Value + Mathf.Max(0.1f, _patienceDuration),
+                PatienceDuration = patience,
+                ExpiresAt = _patienceClock.Value + patience,
             });
             return true;
         }
 
-        private ItemDefinition PickItem()
+        /// <summary>
+        /// A random menu item, each one weighted by its weight at this difficulty. If every weight is 0 here, any
+        /// orderable item (so a badly set menu still gives orders).
+        /// </summary>
+        private ItemDefinition PickItem(float difficulty)
         {
+            var total = 0f;
             var count = 0;
-            foreach (var item in _menu)
+            foreach (var entry in _menu)
             {
-                count += IsOrderable(item) ? 1 : 0;
+                if (IsOrderable(entry))
+                {
+                    total += entry.WeightAt(difficulty);
+                    count++;
+                }
             }
             if (count == 0)
             {
                 Debug.LogWarning("[Orders] The menu has no orderable item.", this);
                 return null;
             }
-            var pick = Random.Range(0, count);
-            foreach (var item in _menu)
+            if (total <= 0f)
             {
-                if (IsOrderable(item) && pick-- == 0)
+                var index = Random.Range(0, count);
+                foreach (var entry in _menu)
                 {
-                    return item;
+                    if (IsOrderable(entry) && index-- == 0)
+                    {
+                        return entry.Item;
+                    }
+                }
+                return null;
+            }
+            var pick = Random.value * total;
+            OrderMenuEntry last = null;
+            foreach (var entry in _menu)
+            {
+                if (!IsOrderable(entry))
+                {
+                    continue;
+                }
+                var weight = entry.WeightAt(difficulty);
+                if (weight <= 0f)
+                {
+                    continue;
+                }
+                last = entry;
+                pick -= weight;
+                if (pick < 0f)
+                {
+                    return entry.Item;
                 }
             }
-            return null;
+            // Rounding: the pick landed on the very end.
+            return last?.Item;
         }
 
-        private bool IsOrderable(ItemDefinition item)
+        private bool IsOrderable(OrderMenuEntry entry)
         {
-            return item != null && _itemDatabase != null && _itemDatabase.TryGet(item.Id, out _);
+            return entry != null && entry.Item != null && _itemDatabase != null && _itemDatabase.TryGet(entry.Item.Id, out _);
         }
 
         // ---------- Every machine ----------
@@ -364,13 +419,14 @@ namespace OverSmithed.Orders
             {
                 case NetworkListEvent<Order>.EventType.Add:
                     _known.Add(change.Value);
-                    Debug.Log($"[Orders] New order #{change.Value.Id}: {Describe(change.Value)} ({_orders.Count}/{_maxOrders} open)");
+                    Debug.Log($"[Orders] New order #{change.Value.Id}: {Describe(change.Value)} ({_orders.Count}/{MaxOrders} open, " +
+                              $"difficulty {Difficulty:F2}, patience {change.Value.PatienceDuration:F0} s)");
                     OrderAdded?.Invoke(change.Value);
                     break;
                 case NetworkListEvent<Order>.EventType.Remove:
                 case NetworkListEvent<Order>.EventType.RemoveAt:
                     _known.Remove(change.Value);
-                    Debug.Log($"[Orders] Order #{change.Value.Id} ({Describe(change.Value)}) is gone ({_orders.Count}/{_maxOrders} open)");
+                    Debug.Log($"[Orders] Order #{change.Value.Id} ({Describe(change.Value)}) is gone ({_orders.Count}/{MaxOrders} open)");
                     OrderRemoved?.Invoke(change.Value);
                     break;
                 case NetworkListEvent<Order>.EventType.Clear:
@@ -458,16 +514,25 @@ namespace OverSmithed.Orders
             {
                 Debug.LogWarning($"[Orders] '{name}': the menu is empty, no order will come.", this);
             }
-            foreach (var item in _menu)
+            var startWeight = 0f;
+            foreach (var entry in _menu)
             {
-                if (item == null)
+                if (entry == null || entry.Item == null)
                 {
                     Debug.LogWarning($"[Orders] '{name}': empty entry in the menu.", this);
                 }
-                else if (_itemDatabase != null && !_itemDatabase.TryGet(item.Id, out _))
+                else if (_itemDatabase != null && !_itemDatabase.TryGet(entry.Item.Id, out _))
                 {
-                    Debug.LogWarning($"[Orders] '{name}': {item.name} is not in the item database.", this);
+                    Debug.LogWarning($"[Orders] '{name}': {entry.Item.name} is not in the item database.", this);
                 }
+                else
+                {
+                    startWeight += entry.WeightStart;
+                }
+            }
+            if (_menu.Count > 0 && startWeight <= 0f)
+            {
+                Debug.LogWarning($"[Orders] '{name}': every start weight is 0, the first orders are picked at random.", this);
             }
         }
     }
