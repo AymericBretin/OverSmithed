@@ -1803,6 +1803,42 @@ PrefabInstance:
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 3953203125
       objectReference: {fileID: 0}
+    - target: {fileID: 1798334567832190060, guid: 6b31c5affdc8c4b85a655841128c7374, type: 3}
+      propertyPath: m_AdditionalShaderChannelsFlag
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 3544192107654680328, guid: 6b31c5affdc8c4b85a655841128c7374, type: 3}
+      propertyPath: m_fontSize
+      value: 72
+      objectReference: {fileID: 0}
+    - target: {fileID: 3544192107654680328, guid: 6b31c5affdc8c4b85a655841128c7374, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 72
+      objectReference: {fileID: 0}
+    - target: {fileID: 3544192107654680328, guid: 6b31c5affdc8c4b85a655841128c7374, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4292933375
+      objectReference: {fileID: 0}
+    - target: {fileID: 3544192107654680328, guid: 6b31c5affdc8c4b85a655841128c7374, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 3872045522543409500, guid: 6b31c5affdc8c4b85a655841128c7374, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3872045522543409500, guid: 6b31c5affdc8c4b85a655841128c7374, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3872045522543409500, guid: 6b31c5affdc8c4b85a655841128c7374, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3872045522543409500, guid: 6b31c5affdc8c4b85a655841128c7374, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4510130866096428848, guid: 6b31c5affdc8c4b85a655841128c7374, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.5
