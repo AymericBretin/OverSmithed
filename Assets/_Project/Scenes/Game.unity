@@ -4180,12 +4180,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Orders.OrderManager
   ShowTopMostFoldoutHeaderGroup: 1
   _menu:
-  - {fileID: 11400000, guid: 43ccbac7173a3403e91eaf79f5b65f55, type: 2}
+  - Item: {fileID: 11400000, guid: 43ccbac7173a3403e91eaf79f5b65f55, type: 2}
+    WeightStart: 1
+    WeightEnd: 1
   _itemDatabase: {fileID: 11400000, guid: 4a41f9c03840b4c42a467b1774145c00, type: 2}
   _ordersAtStart: 2
-  _interval: 20
-  _maxOrders: 4
-  _patienceDuration: 60
+  _ramp:
+    Difficulty:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 1
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    Interval: {x: 28, y: 14}
+    MaxOpen: {x: 3, y: 4}
+    Patience: {x: 70, y: 50}
   _coinsPerOrder: 20
   _debugDeliveryItem: {fileID: 0}
 --- !u!1001 &1772829679
