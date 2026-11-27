@@ -53,6 +53,7 @@ GameObject:
   - component: {fileID: 5123174603395937475}
   - component: {fileID: 6723159243016928231}
   - component: {fileID: 5406750474824814120}
+  - component: {fileID: 2597849742275253576}
   m_Layer: 6
   m_Name: NetworkPlayer
   m_TagString: Untagged
@@ -75,6 +76,7 @@ Transform:
   m_Children:
   - {fileID: 6301662415859197057}
   - {fileID: 4534129135782572064}
+  - {fileID: 709079472279511791}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2402696830240183015
@@ -373,6 +375,19 @@ MonoBehaviour:
     Position: {x: 0.008302015, y: -0.01847746, z: -0.03155804}
     Euler: {x: 341.64395, y: 86.09025, z: 95.59479}
     Scale: {x: 0.75, y: 0.75, z: 0.75}
+--- !u!114 &2597849742275253576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450035355314237043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b000ac104a834024973e9edb5d28b88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.PlayerDashTrail
+  _trail: {fileID: 1447708290962713388}
 --- !u!1 &8257111962428553630
 GameObject:
   m_ObjectHideFlags: 0
@@ -463,3 +478,76 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1001 &8351407390409558274
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 76656341560549894}
+    m_Modifications:
+    - target: {fileID: 8264657900536135835, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+      propertyPath: m_Name
+      value: DashDust
+      objectReference: {fileID: 0}
+    - target: {fileID: 8804819588053396461, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8804819588053396461, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 8804819588053396461, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 8804819588053396461, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8804819588053396461, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8804819588053396461, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8804819588053396461, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8804819588053396461, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8804819588053396461, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8804819588053396461, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+--- !u!4 &709079472279511791 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8804819588053396461, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+  m_PrefabInstance: {fileID: 8351407390409558274}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1447708290962713388 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7489877345182376494, guid: c70c977194f8b4ae2bffbfa7b71825bc, type: 3}
+  m_PrefabInstance: {fileID: 8351407390409558274}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e578cd4ec59b4f249423579e0a3e88b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Effects.MotionTrail

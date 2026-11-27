@@ -66,6 +66,7 @@ namespace OverSmithed.Crafting
         private float _breathTime;
         private float _flash;      // 1 right after a completion, fades to 0
         private float _seed;
+        private float _danger;     // 0 calm .. 1 about to burn / on fire: more smoke, pulsing glow
 
         private void Awake()
         {
@@ -136,10 +137,18 @@ namespace OverSmithed.Crafting
                 return;
             }
             var deltaTime = Time.deltaTime;
-            var hot = _station.IsSpawned && _station.IsWorking;
+            // Hot while an item lies in it (working, ready item waiting, burnt item, fire): it only cools down once the
+            // item is taken, so a ready ingot left there visibly keeps heating until it burns (CR-13).
+            var spawned = _station.IsSpawned;
+            var hot = spawned && (_station.IsWorking || _station.Item != null || _station.IsOnFire);
             _heat = Mathf.MoveTowards(_heat, hot ? 1f : 0f, deltaTime / (hot ? _heatUpTime : _coolDownTime));
             _flash = Mathf.MoveTowards(_flash, 0f, deltaTime / 0.4f);
-            var progress = _station.IsSpawned ? _station.Progress : 0f;
+            var overheat = spawned ? _station.Overheat : null;
+            _danger = overheat == null ? 0f
+                : overheat.IsOnFire ? 1f
+                : overheat.IsWarning ? overheat.WarningProgress : 0f;
+            // A ready item waiting = fully hot, like at the very end of the work.
+            var progress = !spawned ? 0f : _station.IsWorking ? _station.Progress : 1f;
             ApplyHeat(deltaTime, progress);
         }
 
@@ -153,7 +162,9 @@ namespace OverSmithed.Crafting
             {
                 var flicker = 1f + (Mathf.PerlinNoise(Time.time * 6f + _seed, 0.5f) * 2f - 1f) * _glowFlicker;
                 var glow = Mathf.Clamp01(heat + _flash * 0.5f);
-                _stoveMaterial.SetColor(EmissionColorId, _hotColor * (flicker * glow));
+                // About to burn: the glow pulses, faster and stronger as the danger grows.
+                var pulse = 1f + _danger * 0.6f * Mathf.Sin(Time.time * Mathf.Lerp(4f, 14f, _danger));
+                _stoveMaterial.SetColor(EmissionColorId, _hotColor * (flicker * glow * pulse));
             }
 
             // Light: brighter as the work ends, plus a flash on completion.
@@ -163,7 +174,7 @@ namespace OverSmithed.Crafting
                 _lightComponent.enabled = _light.BaseIntensity > 0.001f;
             }
 
-            SetRate(_smoke, _smokeRate * heat);
+            SetRate(_smoke, _smokeRate * heat * (1f + 2f * _danger));
             SetRate(_embers, _emberRate * heat);
 
             // Breathing: taller and a bit thinner, then back. Faster as the work ends.

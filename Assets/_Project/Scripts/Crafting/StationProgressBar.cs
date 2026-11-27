@@ -21,6 +21,7 @@ namespace OverSmithed.Crafting
 
         private float _shown;      // 0 hidden .. 1 fully shown
         private float _doneTimer;  // > 0 while the "done" pop plays
+        private float _value;      // shown value: slides up to the real progress (a strike adds a step)
 
         private void Awake()
         {
@@ -64,6 +65,7 @@ namespace OverSmithed.Crafting
                 _doneTimer = Mathf.Max(0f, _doneTimer - deltaTime);
                 var t = 1f - _doneTimer / _doneTime;
                 _bar.Value = 1f;
+                _value = 0f;
                 var scale = t < 0.35f
                     ? Mathf.Lerp(1f, _donePop, t / 0.35f)
                     : Mathf.Lerp(_donePop, 0f, (t - 0.35f) / 0.65f);
@@ -76,7 +78,10 @@ namespace OverSmithed.Crafting
             var wanted = _station.IsSpawned && _station.CurrentRecipe != null
                 && (_station.IsWorking || _station.Progress > 0f);
             _shown = Mathf.MoveTowards(_shown, wanted ? 1f : 0f, deltaTime / (wanted ? _showTime : _hideTime));
-            _bar.Value = _station.IsSpawned ? _station.Progress : 0f;
+            var progress = _station.IsSpawned ? _station.Progress : 0f;
+            // Going up: slide there quickly (a strike at the anvil jumps one step). Going down (new item): at once.
+            _value = progress < _value ? progress : Mathf.Lerp(_value, progress, 1f - Mathf.Exp(-deltaTime * 20f));
+            _bar.Value = _value;
             // Back ease on the way in (small overshoot), straight on the way out.
             var shown = wanted ? 1f + 2.4f * Mathf.Pow(_shown - 1f, 3f) + 1.4f * Mathf.Pow(_shown - 1f, 2f) : _shown;
             _scaled.localScale = Vector3.one * Mathf.Max(0f, shown);

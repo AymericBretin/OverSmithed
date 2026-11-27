@@ -1,15 +1,15 @@
-using OverSmithed.Counters;
 using UnityEngine;
 
 namespace OverSmithed.Crafting
 {
     /// <summary>
-    /// Sparks on each hammer beat. The beat follows replicated work progress, so pausing preserves its phase and
-    /// every machine uses the same rhythm as PlayerHammerAnimation.
+    /// Sparks on each hammer blow (each strike when tapping Use). The blows are timed by <see cref="HandWorkEffects"/>
+    /// from what the station replicates, so every machine uses the same rhythm as PlayerHammerAnimation.
     /// </summary>
     public class AnvilEffects : HandWorkEffects
     {
         [SerializeField] private ParticleSystem _sparks;
+        [Tooltip("Hold mode only: seconds of one blow.")]
         [SerializeField, Min(0.05f)] private float _hitInterval = 0.6f;
         [Tooltip("Contact point in each swing, matching the two contacts in Player_HammerLoop.")]
         [SerializeField, Range(0f, 1f)] private float _hitPhase = 0.56f;
@@ -19,21 +19,19 @@ namespace OverSmithed.Crafting
         [SerializeField] private Light _hitLight;
         [SerializeField, Min(0f)] private float _flashIntensity = 2f;
 
-        private int _lastHit = -1;
         private float _flash;
 
         public override HandTool Tool => HandTool.Hammer;
 
-        // The clip has two swings. Both the pose and the effects use elapsed WORK time, not local wall time.
-        public override float AnimationPhase => Mathf.Repeat(_station.WorkSeconds / (2f * Mathf.Max(0.05f, _hitInterval)), 1f);
+        protected override float HoldBlowTime => Mathf.Max(0.05f, _hitInterval);
+
+        protected override float ContactPhase => _hitPhase;
 
         protected override void OnEnable()
         {
             base.OnEnable();
-            _lastHit = -1;
             if (_station != null)
             {
-                _station.ItemChanged += HandleItemChanged;
                 _station.WorkCompleted += HandleWorkCompleted;
             }
         }
@@ -45,7 +43,6 @@ namespace OverSmithed.Crafting
             if (_hitLight != null) _hitLight.intensity = 0f;
             if (_station != null)
             {
-                _station.ItemChanged -= HandleItemChanged;
                 _station.WorkCompleted -= HandleWorkCompleted;
             }
             if (_sparks != null)
@@ -54,37 +51,21 @@ namespace OverSmithed.Crafting
             }
         }
 
-        private void HandleItemChanged(Counter counter)
-        {
-            _lastHit = -1;
-        }
-
         private void HandleWorkCompleted(Station station)
         {
             EmitHit();
-            _lastHit = -1;
         }
 
-        private void Update()
+        protected override void OnContact()
+        {
+            EmitHit();
+        }
+
+        protected override void Update()
         {
             _flash = Mathf.MoveTowards(_flash, 0f, Time.deltaTime / 0.12f);
             if (_hitLight != null) _hitLight.intensity = _flashIntensity * _flash * _flash;
-            if (_station == null || !_station.IsSpawned || !_station.IsWorking || Time.deltaTime <= 0f)
-            {
-                return;
-            }
-            var recipe = _station.CurrentRecipe;
-            if (recipe == null)
-            {
-                return;
-            }
-            var hit = Mathf.FloorToInt(_station.WorkSeconds / Mathf.Max(0.05f, _hitInterval) - _hitPhase);
-            if (hit != _lastHit)
-            {
-                _lastHit = hit;
-                // A late observer shows the current hit, never a backlog of old sparks.
-                EmitHit();
-            }
+            base.Update();
         }
 
         private void EmitHit()

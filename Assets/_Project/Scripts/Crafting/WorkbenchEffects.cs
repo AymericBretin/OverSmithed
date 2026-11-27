@@ -10,8 +10,8 @@ namespace OverSmithed.Crafting
     /// The workbench looks (CR-10): the worker saws (<see cref="HandTool.Saw"/>), each push of the saw throws a puff
     /// of sawdust high enough to be seen above the worker's head, colored by the item being worked (light wood, brown
     /// leather), the item rocks on each stroke, and the saw lying on the bench is
-    /// hidden while a player holds it. Like the anvil, the rhythm follows the station's replicated work time, so
-    /// every machine shows the same strokes. Local only.
+    /// hidden while a player holds it. Like the anvil, each strike (tap of Use) is one stroke, timed by
+    /// <see cref="HandWorkEffects"/> from what the station replicates, so every machine shows the same strokes. Local only.
     /// </summary>
     public class WorkbenchEffects : HandWorkEffects
     {
@@ -22,7 +22,7 @@ namespace OverSmithed.Crafting
             public Color Color;
         }
 
-        [Tooltip("Seconds for one saw stroke (push + pull). The animation loop has two strokes.")]
+        [Tooltip("Hold mode only: seconds for one saw stroke (push + pull). The animation loop has two strokes.")]
         [SerializeField, Min(0.05f)] private float _strokeTime = 0.5f;
         [Tooltip("Moment of each stroke (0..1) when the saw bites, matching the push in Player_SawLoop.")]
         [SerializeField, Range(0f, 1f)] private float _cutPhase = 0.35f;
@@ -38,17 +38,17 @@ namespace OverSmithed.Crafting
         [Tooltip("The saw lying on the bench: hidden while a player saws with it.")]
         [SerializeField] private GameObject _benchSaw;
 
-        private int _lastStroke = int.MinValue;
         private Color _currentColor;
 
         public override HandTool Tool => HandTool.Saw;
 
-        public override float AnimationPhase => Mathf.Repeat(_station.WorkSeconds / (2f * _strokeTime), 1f);
+        protected override float HoldBlowTime => Mathf.Max(0.05f, _strokeTime);
+
+        protected override float ContactPhase => _cutPhase;
 
         protected override void OnEnable()
         {
             base.OnEnable();
-            _lastStroke = int.MinValue;
             if (_station != null)
             {
                 _station.ItemChanged += HandleItemChanged;
@@ -77,7 +77,6 @@ namespace OverSmithed.Crafting
 
         private void HandleItemChanged(Counter counter)
         {
-            _lastStroke = int.MinValue;
             // The color of the item put here: the output that replaces it keeps the dust of what was cut.
             var recipe = _station.CurrentRecipe;
             if (recipe != null && recipe.Inputs.Count > 0)
@@ -89,10 +88,15 @@ namespace OverSmithed.Crafting
         private void HandleWorkCompleted(Station station)
         {
             Emit(_dustOnComplete);
-            _lastStroke = int.MinValue;
         }
 
-        private void Update()
+        protected override void OnContact()
+        {
+            Emit(_dustPerStroke);
+            WobbleItem();
+        }
+
+        protected override void Update()
         {
             if (_benchSaw != null)
             {
@@ -102,23 +106,7 @@ namespace OverSmithed.Crafting
                     _benchSaw.SetActive(!sawInHand);
                 }
             }
-            if (_station == null || !_station.IsSpawned || !_station.IsWorking || _station.CurrentRecipe == null
-                || Time.deltaTime <= 0f)
-            {
-                return;
-            }
-            var stroke = Mathf.FloorToInt(_station.WorkSeconds / _strokeTime - _cutPhase);
-            if (stroke != _lastStroke)
-            {
-                // A late observer shows the current stroke, never a backlog of old dust.
-                var first = _lastStroke == int.MinValue;
-                _lastStroke = stroke;
-                if (!first || _station.WorkSeconds > _cutPhase * _strokeTime)
-                {
-                    Emit(_dustPerStroke);
-                    WobbleItem();
-                }
-            }
+            base.Update();
         }
 
         // The item on the bench jumps a little on each stroke (its visual only, see ItemVisualMotion).

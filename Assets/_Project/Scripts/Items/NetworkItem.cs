@@ -32,6 +32,8 @@ namespace OverSmithed.Items
         [SerializeField] private ParticleSystem _poofPrefab;
 
         private readonly NetworkVariable<int> _itemId = new(ItemDefinition.NoneId);
+        // Host-written copy of "thrown and still flying", so every machine can show the throw trail (2 writes per throw).
+        private readonly NetworkVariable<bool> _flying = new();
 
         private ItemDefinition _pendingDefinition;
         private GameObject _visual;
@@ -66,6 +68,9 @@ namespace OverSmithed.Items
         /// <summary>Host: this free item came from a throw and can be caught by an empty-handed player.</summary>
         public bool IsThrown => _isThrown;
 
+        /// <summary>Every machine: the item was thrown and is still flying (until it lands, is caught or placed).</summary>
+        public bool IsFlying => IsSpawned && _flying.Value;
+
         /// <summary>
         /// Host only: the item becomes free: it falls and slides from where it is, starting at
         /// <paramref name="velocity"/>. Call it after the item left any hands or counter.
@@ -84,8 +89,18 @@ namespace OverSmithed.Items
             _body.linearVelocity = velocity;
             _body.angularVelocity = Vector3.zero;
             _body.WakeUp();
-            _isThrown = thrown;
+            SetThrown(thrown);
             _thrower = thrown ? thrower : null;
+        }
+
+        // Host: the throw state, copied to every machine.
+        private void SetThrown(bool thrown)
+        {
+            _isThrown = thrown;
+            if (IsSpawned && _flying.Value != thrown)
+            {
+                _flying.Value = thrown;
+            }
         }
 
         /// <summary>Host only: the item stops moving by itself (it goes in hands or on a counter).</summary>
@@ -95,7 +110,7 @@ namespace OverSmithed.Items
             {
                 return;
             }
-            _isThrown = false;
+            SetThrown(false);
             _thrower = null;
             if (_body == null || _body.isKinematic)
             {
@@ -308,7 +323,7 @@ namespace OverSmithed.Items
 
             // It is no longer flying after hitting a wall, the ground, a full counter, or a player who cannot
             // catch it. It can still be picked up normally with Interact.
-            _isThrown = false;
+            SetThrown(false);
             _thrower = null;
         }
 
