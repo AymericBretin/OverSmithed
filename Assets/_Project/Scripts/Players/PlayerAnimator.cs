@@ -49,6 +49,7 @@ namespace OverSmithed.Players
         private NetworkPlayer _player;
         private PlayerMovement _movement;
         private PlayerHands _hands;
+        private PlayerHammerAnimation _hammerAnimation;
         private Vector3 _lastPosition;
 
         // The skin visual (and so its Animator) can change: the layer index and the hands are looked up again then.
@@ -76,6 +77,7 @@ namespace OverSmithed.Players
             _player = GetComponent<NetworkPlayer>();
             _movement = GetComponent<PlayerMovement>();
             _hands = GetComponent<PlayerHands>();
+            _hammerAnimation = GetComponent<PlayerHammerAnimation>();
         }
 
         private void OnEnable()
@@ -150,6 +152,16 @@ namespace OverSmithed.Players
             }
             if (_carryLayer < 0)
             {
+                StopFollowing();
+                return;
+            }
+
+            // The full-body hammer layer owns the arms. A pending put-down reach must not bend its strike.
+            if (_hammerAnimation != null && _hammerAnimation.IsHammering)
+            {
+                animator.SetLayerWeight(_carryLayer, 0f);
+                _gestureElapsed = float.MaxValue;
+                _lastHeldItem = null;
                 StopFollowing();
                 return;
             }
