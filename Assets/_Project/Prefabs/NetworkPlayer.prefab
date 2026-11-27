@@ -52,6 +52,7 @@ GameObject:
   - component: {fileID: 3662721793658422320}
   - component: {fileID: 5123174603395937475}
   - component: {fileID: 6723159243016928231}
+  - component: {fileID: 5406750474824814120}
   m_Layer: 6
   m_Name: NetworkPlayer
   m_TagString: Untagged
@@ -351,6 +352,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.PlayerWork
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &5406750474824814120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450035355314237043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4078da1f551a4be8803a0105767b82c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: OverSmithed.Runtime::OverSmithed.Players.PlayerHammerAnimation
+  _hammerPrefab: {fileID: 919132149155446097, guid: dd0c54764295c435ca1e2386faf90a5c, type: 3}
+  _hammerPosition: {x: 0, y: 0, z: 0}
+  _hammerEuler: {x: 310.73108, y: 171.80092, z: 302.56113}
+  _hammerScale: {x: 1.25, y: 1.25, z: 1.25}
 --- !u!1 &8257111962428553630
 GameObject:
   m_ObjectHideFlags: 0

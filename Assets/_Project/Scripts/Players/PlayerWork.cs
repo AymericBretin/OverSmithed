@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 namespace OverSmithed.Players
 {
     /// <summary>
-    /// Holding Use on a station worked by hand (the grindstone, CR-19; later the anvil, CR-9). The owner machine reads
+    /// Holding Use on a station worked by hand (the grindstone, CR-19; the anvil, CR-9). The owner machine reads
     /// Use and the station in front of the player, and tells the host only when that changes (start / stop), not every
     /// frame. The host keeps the list of workers on each station and checks the rules itself every frame (in reach,
     /// empty hands, able to act): the station works while one of them is valid and pauses otherwise.
@@ -41,7 +41,9 @@ namespace OverSmithed.Players
         /// <summary>Host: true if this player may work on <paramref name="station"/> now.</summary>
         public bool CanWorkAt(Station station)
         {
-            return IsSpawned && station != null && station == _hostStation && _player.CanAct && !_hands.IsHolding
+            return isActiveAndEnabled && IsSpawned && station != null && station.IsSpawned
+                   && station.isActiveAndEnabled && station == _hostStation && _player.CanAct
+                   && _player.IsInputConnected && !_hands.IsHolding
                    && _hands.IsInReach(station.NetworkObject);
         }
 
@@ -63,7 +65,8 @@ namespace OverSmithed.Players
         // Owner: the hand-work station in front of the player while Use is held with empty hands, else null.
         private Station WantedStation()
         {
-            if (!_player.CanAct || _hands.IsHolding || !TryGetUseAction(out var use) || !use.IsPressed())
+            if (!_player.CanAct || !_player.IsInputConnected || _hands.IsHolding
+                || !TryGetUseAction(out var use) || !use.IsPressed())
             {
                 return null;
             }
@@ -92,9 +95,9 @@ namespace OverSmithed.Players
                 _hostStation.SetWorker(this, false);
             }
             _hostStation = station;
-            if (_hostStation != null)
+            if (_hostStation != null && !_hostStation.SetWorker(this, true))
             {
-                _hostStation.SetWorker(this, true);
+                _hostStation = null;
             }
         }
 

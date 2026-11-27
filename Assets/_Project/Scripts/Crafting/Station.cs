@@ -27,6 +27,7 @@ namespace OverSmithed.Crafting
             public double ServerTime;
             public float Duration;
             public bool Running;
+            public NetworkObjectReference Worker;
 
             public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
             {
@@ -34,12 +35,13 @@ namespace OverSmithed.Crafting
                 serializer.SerializeValue(ref ServerTime);
                 serializer.SerializeValue(ref Duration);
                 serializer.SerializeValue(ref Running);
+                serializer.SerializeValue(ref Worker);
             }
 
             public bool Equals(WorkState other)
             {
                 return Progress.Equals(other.Progress) && ServerTime.Equals(other.ServerTime)
-                    && Duration.Equals(other.Duration) && Running == other.Running;
+                    && Duration.Equals(other.Duration) && Running == other.Running && Worker.Equals(other.Worker);
             }
         }
 
@@ -49,6 +51,8 @@ namespace OverSmithed.Crafting
         [Tooltip("On: the work starts by itself when an item with a recipe is put here (furnace). Off: the work is " +
                  "started and paused by code (anvil: hold Use).")]
         [SerializeField] private bool _autoStart = true;
+        [Tooltip("Only one player may hold Use on this station at a time (anvil). Other players must release and retry.")]
+        [SerializeField] private bool _singleWorker;
 
         private readonly NetworkVariable<WorkState> _work = new();
         // Host: players holding Use on this station (hand work only).
@@ -57,6 +61,7 @@ namespace OverSmithed.Crafting
 
         // Host: the real progress, counted with the game time (a local pause stops it).
         private float _hostProgress;
+        private PlayerWork _activeWorker;
 
         /// <summary>Every machine: the work just finished (the item became the recipe's output).</summary>
         public event Action<Station> WorkCompleted;
@@ -82,6 +87,24 @@ namespace OverSmithed.Crafting
 
         /// <summary>Every machine: true while the work is going on.</summary>
         public bool IsWorking => _work.Value.Running;
+
+        /// <summary>The player actually doing the work, replicated atomically with the progress and running flag.</summary>
+        public PlayerWork ActiveWorker => IsSpawned && IsWorking
+            && _work.Value.Worker.TryGet(out var worker, NetworkManager) ? worker.GetComponent<PlayerWork>() : null;
+
+        /// <summary>Elapsed work time, using the same synchronized clock as the progress bar.</summary>
+        public float WorkSeconds
+        {
+            get
+            {
+                var state = _work.Value;
+                var elapsed = state.Running && NetworkManager != null
+                    ? (float)(NetworkManager.ServerTime.Time - state.ServerTime) : 0f;
+                // Visuals on the host use the same clock interpolation as remote observers, not the previous
+                // frame's authoritative counter (which can lag after a long rendering frame).
+                return Mathf.Clamp(state.Progress * state.Duration + elapsed, 0f, state.Duration);
+            }
+        }
 
         /// <summary>Every machine: work done on the current item, 0..1.</summary>
         public float Progress
@@ -127,21 +150,43 @@ namespace OverSmithed.Crafting
         // Nothing goes onto the item of a station (no piling trays on the grindstone).
         protected override bool AcceptsOntoItem => false;
 
-        /// <summary>Host: a player starts / stops holding Use on this station (hand work stations only).</summary>
-        public void SetWorker(PlayerWork worker, bool working)
+        /// <summary>Host: registers/releases a worker. False when the station cannot accept that player.</summary>
+        public bool SetWorker(PlayerWork worker, bool working)
         {
-            if (!IsServer || worker == null || !NeedsHandWork)
+            if (!IsServer || !IsSpawned || worker == null || !NeedsHandWork)
             {
-                return;
+                return false;
             }
             if (working)
             {
+                if (!worker.CanWorkAt(this))
+                {
+                    return false;
+                }
+                if (_singleWorker)
+                {
+                    // Release stale claims before admitting someone else (left, fell, disconnected, or took an item).
+                    _workers.RemoveWhere(candidate => candidate == null || !candidate.CanWorkAt(this));
+                    if (_workers.Count > 0 && !_workers.Contains(worker))
+                    {
+                        return false;
+                    }
+                }
                 _workers.Add(worker);
             }
             else
             {
                 _workers.Remove(worker);
             }
+            return true;
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            _workers.Clear();
+            _activeWorker = null;
+            _hostProgress = 0f;
+            base.OnNetworkDespawn();
         }
 
         // ---------- Host ----------
@@ -219,7 +264,7 @@ namespace OverSmithed.Crafting
         // Host: a hand work station runs while someone valid holds Use on it (in reach, empty hands, can act).
         private void UpdateHandWork()
         {
-            var anyone = false;
+            PlayerWork active = null;
             _gone.Clear();
             foreach (var worker in _workers)
             {
@@ -229,20 +274,29 @@ namespace OverSmithed.Crafting
                 }
                 else if (worker.CanWorkAt(this))
                 {
-                    anyone = true;
+                    if (active == null || worker == _activeWorker)
+                    {
+                        active = worker;
+                    }
                 }
             }
             foreach (var worker in _gone)
             {
                 _workers.Remove(worker);
             }
-            if (anyone && !IsWorking && CurrentRecipe != null)
+            var changed = active != _activeWorker;
+            _activeWorker = active;
+            if (active != null && !IsWorking && CurrentRecipe != null)
             {
                 StartWork();
             }
-            else if (!anyone && IsWorking)
+            else if (active == null && IsWorking)
             {
                 PauseWork();
+            }
+            else if (changed && IsWorking)
+            {
+                WriteState(true, _work.Value.Duration);
             }
         }
 
@@ -272,6 +326,7 @@ namespace OverSmithed.Crafting
                 ServerTime = NetworkManager.ServerTime.Time,
                 Duration = duration,
                 Running = running,
+                Worker = new NetworkObjectReference(running && _activeWorker != null ? _activeWorker.NetworkObject : null),
             };
         }
 
