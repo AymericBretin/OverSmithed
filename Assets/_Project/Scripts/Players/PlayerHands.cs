@@ -331,7 +331,11 @@ namespace OverSmithed.Players
                     if (part != null && !part.TryGetComponent<Tray>(out _) && held.TryGetComponent<Tray>(out var trayInHands)
                         && trayInHands.CanAbsorb(part))
                     {
-                        counter.Take();
+                        // A locked counter (furnace on fire) keeps its item.
+                        if (counter.Take() == null)
+                        {
+                            return false;
+                        }
                         return trayInHands.Absorb(part);
                     }
                     return false;

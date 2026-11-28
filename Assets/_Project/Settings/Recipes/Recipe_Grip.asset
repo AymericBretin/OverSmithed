@@ -17,3 +17,4 @@ MonoBehaviour:
   _station: 3
   _output: {fileID: 11400000, guid: f3481a848b5fd4ffc84784c09b2b5eb8, type: 2}
   _workTime: 3
+  _strikes: 10

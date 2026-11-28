@@ -69,6 +69,12 @@ namespace OverSmithed.Players
         private bool _wasMoving;
         private bool _wasDashing;
 
+        /// <summary>
+        /// Every machine: the player is dashing, as seen from the movement (faster than 1.4 × the run speed), so it
+        /// works for remote players too without network data. Used by <see cref="PlayerDashTrail"/>.
+        /// </summary>
+        public bool IsDashing => _wasDashing;
+
         private void Awake()
         {
             _movement = GetComponent<PlayerMovement>();

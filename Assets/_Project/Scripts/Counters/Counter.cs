@@ -156,15 +156,22 @@ namespace OverSmithed.Counters
             return true;
         }
 
+        /// <summary>False while the item lying here may not be taken (a furnace on fire). True for a plain counter.</summary>
+        public virtual bool AllowsTake => true;
+
         /// <summary>
         /// Host only: the item leaves this counter (it is not moved: the caller does it, for example a player
-        /// picks it up). Returns the item, or null if the counter was empty.
+        /// picks it up). Returns the item, or null if the counter was empty or locked (<see cref="AllowsTake"/>).
         /// </summary>
         public NetworkItem Take()
         {
             if (!IsServer || !IsSpawned)
             {
                 Debug.LogWarning("[Counter] Only the host can take items.", this);
+                return null;
+            }
+            if (!AllowsTake)
+            {
                 return null;
             }
             var item = Item;

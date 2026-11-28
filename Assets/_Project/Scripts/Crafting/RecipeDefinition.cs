@@ -17,14 +17,19 @@ namespace OverSmithed.Crafting
         [SerializeField] private List<ItemDefinition> _inputs = new();
         [SerializeField] private StationKind _station;
         [SerializeField] private ItemDefinition _output;
-        [Tooltip("Seconds of work. Furnace: time on the fire. Anvil, workbench: time holding Use. 0 = instant.")]
+        [Tooltip("Seconds of work. Furnace: time on the fire. Grindstone: time holding Use. 0 = instant. " +
+                 "Not used on stations worked by tapping Use (anvil, workbench): see Strikes.")]
         [Min(0f)]
         [SerializeField] private float _workTime = 3f;
+        [Tooltip("Presses of Use needed on a station worked by tapping (anvil, workbench).")]
+        [Min(1)]
+        [SerializeField] private int _strikes = 10;
 
         public IReadOnlyList<ItemDefinition> Inputs => _inputs;
         public StationKind Station => _station;
         public ItemDefinition Output => _output;
         public float WorkTime => _workTime;
+        public int Strikes => Mathf.Max(1, _strikes);
 
         /// <summary>True if <paramref name="items"/> are exactly this recipe's inputs, in any order.</summary>
         public bool HasInputs(IReadOnlyList<ItemDefinition> items)
